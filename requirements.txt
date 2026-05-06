@@ -1,0 +1,20 @@
+# Core Machine Learning & Deep Learning
+torch
+transformers
+datasets
+tokenizers
+accelerate
+
+# Fine-tuning & Optimization (SOTA)
+peft
+trl
+bitsandbytes
+sentencepiece
+protobuf
+unsloth
+
+# Google Cloud Platform
+google-cloud-aiplatform
+
+# Utilities
+python-dotenv
