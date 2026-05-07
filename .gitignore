@@ -5,3 +5,5 @@ venv/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+unsloth_compiled_cache/
+microsoft-deberta-v3-base-emotion-recognition/
