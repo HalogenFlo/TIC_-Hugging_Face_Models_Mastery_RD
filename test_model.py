@@ -1,8 +1,6 @@
 from transformers import pipeline
 
-
-# MODEL_PATH = "C:/Users/Admin/Desktop/TIC_Project/bert-emotion-recognition"
-MODEL_PATH = "C:/Users/Admin/Desktop/TIC_Project/deberta-emotion-recognition"
+MODEL_PATH = "C:/Users/Admin/Desktop/TIC_Project/microsoft-deberta-v3-base-emotion-recognition"
 
 def main():
     clf = pipeline(
