@@ -1,7 +1,9 @@
 # TIC Project Progress Report - Hugging Face Mastery
 
 ## Date Updated: 2026-05-06
-## Status: **Step 1 - COMPLETED**
+## Status: **Step 1 - COMPLETED
+## Status: **Step 2 - COMPLETED 
+## Step 3 - IN PROGRESS**
 
 ---
 
@@ -29,7 +31,7 @@
 
 ---
 
-### Next Plan: **Step 2**
+### Tasks completed in Step 2:
 *   **Implement standard Machine Learning pipeline:**
     *   Define the problem and data
     *   Tokenization and data preprocessing
@@ -59,6 +61,22 @@
     *   Train the model
     *   Evaluate the model
     *   Save and share the model
+
+---
+
+### Step 3: Deep Learning Standard Workflow
+*   **Research & Learning: [COMPLETED]**
+    *   **ML vs DL Difference:** Transitioned from sequence-level classification (Step 2) to understanding automatic feature extraction and deep neural architectures.
+    *   **Transformer Architecture & Self-Attention:** Studied the Query, Key, and Value mechanisms that allow models to capture global dependencies and process data in parallel.
+    *   **Feature Extractors vs. Tokenizers:** Learned the role of `ImageProcessors` in Vision Transformers (ViT) for normalization and patching, compared to `Tokenizers` in NLP.
+*   **Actions (Conceptual Research):**
+    *   **Task Selection:** Analyzed Vision Transformers (ViT) for Image Classification vs. NER for token-level NLP.
+    *   **Model Selection:** Evaluated SOTA architectures like `google/vit-base-patch16-224` and `bert-base-cased`.
+    *   **Comparison Report:** Finalized the technical comparison between ML and DL pipelines in the Hugging Face ecosystem.
+*   **Planned Milestone:**
+    *   [ ] Train a DL model using high-level HF tools.
+    *   [ ] Push the model to Hugging Face Hub with a comprehensive Model Card.
+    *   [ ] Finalize the ML vs DL comparison documentation.
 
 ---
 *This report is automatically updated to track the Hugging Face Mastery roadmap.*
