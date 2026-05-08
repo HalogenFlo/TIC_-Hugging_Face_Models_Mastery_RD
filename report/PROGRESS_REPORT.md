@@ -85,12 +85,12 @@
 | **Training Time** | Minutes to hours. | Hours to days (requires Transfer Learning for efficiency). |
 | **Interpretability** | High (e.g., Decision Trees, Coefficients). | Low ("Black Box" nature of deep neural networks). |
 
-*   **Actions (Conceptual Research):**
-    *   **Task Selection:** Analyzed Vision Transformers (ViT) for Image Classification vs. NER for token-level NLP.
-    *   **Model Selection:** Evaluated SOTA architectures like `google/vit-base-patch16-224` and `bert-base-cased`.
-    *   **Comparison Report:** Finalized the technical comparison between ML and DL pipelines in the Hugging Face ecosystem.
+*   **Actions (Implementation):**
+    *   **Task Selection:** Image Classification on handwritten digits and letters (**[Royc30ne/emnist-byclass](https://huggingface.co/datasets/Royc30ne/emnist-byclass)**).
+    *   **Model Selection:** Vision Transformer (**ViT**) `google/vit-base-patch16-224-in21k`.
+    *   **Technical Adaptation:** Implemented grayscale-to-RGB conversion and 224x224 resizing for 62 classes (Digits + Letters) compatibility.
 *   **Planned Milestone:**
-    *   [ ] Train a DL model using high-level HF tools.
+    *   [x] Train a DL model using high-level HF tools (`notebook/step3_TIC_Mastery.ipynb`).
     *   [ ] Push the model to Hugging Face Hub with a comprehensive Model Card.
     *   [ ] Finalize the ML vs DL comparison documentation.
 
