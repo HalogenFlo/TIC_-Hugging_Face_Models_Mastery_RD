@@ -1,16 +1,18 @@
 # TIC Project Progress Report - Hugging Face Mastery
 
 ## Date Updated: 2026-05-06
-## Status: **Step 1 - COMPLETED
-## Status: **Step 2 - COMPLETED 
-## Step 3 - IN PROGRESS**
+## Status: **Step 1 - COMPLETED**
+## Status: **Step 2 - COMPLETED** 
+## Status: **Step 3 - IN PROGRESS**
 
 ---
 
 ### Tasks completed in Step 1:
 1.  **Environment Setup:** Initialized Python venv and configured environment variables.
-2.  **Library Installation:** Completed installation of the SOTA toolkit for LLMs.
-3.  **Knowledge Systematization:** Understood the roles of Tokenization libraries (converting text -> tokens -> numbers) and Serialization (saving models to disk and loading them).
+2.  **Library Installation:** Completed installation of the SOTA toolkit for LLMs (Transformers, Unsloth, etc.).
+3.  **Knowledge Systematization:** Understood the roles of Tokenization libraries and Serialization.
+4.  **SOTA Research:** Studied the architecture of **DeepSeek-V3** and its optimization strategies.
+5.  **Basic Inference Milestone:** Verified environment by running successful inference on a Hub-hosted model (GPT-2).
 
 ---
 
@@ -24,6 +26,7 @@
 | **`accelerate`** | Optimizes training on GPU/TPU and supports Distributed Training. | Essential for training large LLM models. |
 | **`peft`** | Supports efficient Fine-tuning techniques (LoRA, DoRA, Prefix Tuning). | Helps reduce hardware costs when fine-tuning models for enterprises. |
 | **`bitsandbytes`** | Supports Quantization (8-bit, 4-bit) to reduce VRAM memory. | Allows running/training LLMs on consumer-grade GPUs (12GB-16GB). |
+| **`trl`** | Transformer Reinforcement Learning library (SFT, DPO, PPO). | Used for alignment and fine-tuning LLMs using reinforcement learning techniques. |
 | **`sentencepiece`** | Subword-based tokenization engine, required for Llama, Mistral, T5 families. | Helps read `.model` files containing language rules of SOTA models. |
 | **`protobuf`** | Standardizes reading/writing configuration data and model tokenizers. | A prerequisite for the SentencePiece library to work stably. |
 | **`unsloth`** | Tool to optimize LLM training to be 2-5x faster and save 70% VRAM. | **Key SOTA** of the project to achieve the highest performance. |
@@ -60,15 +63,28 @@
     *   Set number of epochs to 5 and batch size to 16
     *   Train the model
     *   Evaluate the model
-    *   Save and share the model
+    *   Save and share the model: **Successfully pushed to Hugging Face Hub with a professional Model Card.**
+    *   **Model Link:** [HalogenFlo/microsoft-deberta-v3-base-emotion-recognition](https://huggingface.co/HalogenFlo/microsoft-deberta-v3-base-emotion-recognition)
 
 ---
 
 ### Step 3: Deep Learning Standard Workflow
 *   **Research & Learning: [COMPLETED]**
-    *   **ML vs DL Difference:** Transitioned from sequence-level classification (Step 2) to understanding automatic feature extraction and deep neural architectures.
-    *   **Transformer Architecture & Self-Attention:** Studied the Query, Key, and Value mechanisms that allow models to capture global dependencies and process data in parallel.
-    *   **Feature Extractors vs. Tokenizers:** Learned the role of `ImageProcessors` in Vision Transformers (ViT) for normalization and patching, compared to `Tokenizers` in NLP.
+    *   **ML vs DL Difference:** Transitioned from manual feature engineering to automatic feature extraction using deep neural architectures.
+    *   **Transformer Architecture & Self-Attention:** Studied the Query, Key, and Value mechanisms.
+    *   **Feature Extractors vs. Tokenizers:** Compared `ImageProcessors` (ViT) vs `Tokenizers` (NLP).
+
+#### Technical Comparison: ML vs DL Pipeline
+
+| Pipeline Step | Machine Learning (ML) | Deep Learning (DL) |
+| :--- | :--- | :--- |
+| **Feature Extraction** | **Manual:** Requires domain expertise to select features. | **Automatic:** Layers learn features directly from raw data. |
+| **Data Requirements** | Works well with smaller, structured datasets. | Requires large-scale unstructured data (Images, Text). |
+| **Hardware** | Optimized for **CPU** execution. | Heavily dependent on **GPU/TPU** (Parallel Processing). |
+| **Preprocessing** | Scaling, Normalization, One-hot encoding. | Tokenization (NLP) or Patching (Vision Transformers). |
+| **Training Time** | Minutes to hours. | Hours to days (requires Transfer Learning for efficiency). |
+| **Interpretability** | High (e.g., Decision Trees, Coefficients). | Low ("Black Box" nature of deep neural networks). |
+
 *   **Actions (Conceptual Research):**
     *   **Task Selection:** Analyzed Vision Transformers (ViT) for Image Classification vs. NER for token-level NLP.
     *   **Model Selection:** Evaluated SOTA architectures like `google/vit-base-patch16-224` and `bert-base-cased`.
