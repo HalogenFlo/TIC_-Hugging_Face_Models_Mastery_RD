@@ -1,6 +1,6 @@
 # TIC Project Progress Report - Hugging Face Mastery
 
-## Date Updated: 2026-05-06
+## Date Updated: 2026-05-09
 ## Status: **Step 1 - COMPLETED**
 ## Status: **Step 2 - COMPLETED** 
 ## Status: **Step 3 - IN PROGRESS**
@@ -65,6 +65,10 @@
     *   Evaluate the model
     *   Save and share the model: **Successfully pushed to Hugging Face Hub with a professional Model Card.**
     *   **Model Link:** [HalogenFlo/microsoft-deberta-v3-base-emotion-recognition](https://huggingface.co/HalogenFlo/microsoft-deberta-v3-base-emotion-recognition)
+*   **Models Selected for Step 2:**
+    1.  **DeBERTa-v3-base (`microsoft/deberta-v3-base`):** Main model used for Emotion Recognition. High performance with Disentangled Attention.
+    2.  **DistilBERT (`distilbert-base-uncased`):** Lightweight version for knowledge distillation research.
+    3.  **RoBERTa (`roberta-base`):** Robustly optimized BERT variant for performance benchmarking.
 
 ---
 
@@ -86,11 +90,15 @@
 | **Interpretability** | High (e.g., Decision Trees, Coefficients). | Low ("Black Box" nature of deep neural networks). |
 
 *   **Actions (Implementation):**
-    *   **Task Selection:** Image Classification on handwritten digits and letters (**[Royc30ne/emnist-byclass](https://huggingface.co/datasets/Royc30ne/emnist-byclass)**).
-    *   **Model Selection:** Vision Transformer (**ViT**) `google/vit-base-patch16-224-in21k`.
-    *   **Technical Adaptation:** Implemented grayscale-to-RGB conversion and 224x224 resizing for 62 classes (Digits + Letters) compatibility.
+    *   **Models Selected for Step 3:**
+        1.  **ViT (`google/vit-base-patch16-224-in21k`):** Primary model for EMNIST classification using Transformer architecture.
+        2.  **ConvNeXt (`facebook/convnext-tiny-224`):** Modern CNN architecture for Transformer vs. CNN comparison.
+        3.  **RT-DETR (`Peadar/rt-detr-v2-s`):** Transformer-based real-time object detection research.
+    *   **Technical Adaptation:** Initializing grayscale-to-RGB conversion, anti-rotation/flip transforms, and 224x224 resizing for 62 classes (Digits + Letters) compatibility.
 *   **Planned Milestone:**
-    *   [x] Train a DL model using high-level HF tools (`notebook/step3_TIC_Mastery.ipynb`).
+    *   [x] Load and Analyze EMNIST dataset (62 classes, ~800k samples) via `torchvision`.
+    *   [/] Design Preprocessing Pipeline (Normalization, RGB conversion, Rotate/Flip correction).
+    *   [ ] Train a DL model using high-level HF tools (`notebook/step3_TIC_Mastery.ipynb`).
     *   [ ] Push the model to Hugging Face Hub with a comprehensive Model Card.
     *   [ ] Finalize the ML vs DL comparison documentation.
 
