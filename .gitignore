@@ -8,3 +8,4 @@ __pycache__/
 unsloth_compiled_cache/
 microsoft-deberta-v3-base-emotion-recognition/
 notebook/data/
+notebook/vit-emnist-byclass/
