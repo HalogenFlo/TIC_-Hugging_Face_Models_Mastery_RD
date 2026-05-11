@@ -11,8 +11,7 @@
 1.  **Environment Setup:** Initialized Python venv and configured environment variables.
 2.  **Library Installation:** Completed installation of the SOTA toolkit for LLMs (Transformers, Unsloth, etc.).
 3.  **Knowledge Systematization:** Understood the roles of Tokenization libraries and Serialization.
-4.  **SOTA Research:** Studied the architecture of **DeepSeek-V3** and its optimization strategies.
-5.  **Basic Inference Milestone:** Verified environment by running successful inference on a Hub-hosted model (GPT-2).
+4.  **Basic Inference Milestone:** Verified environment by running successful inference on a Hub-hosted model (GPT-2).
 
 ---
 
@@ -58,7 +57,7 @@
     *   Create relationships between labels and ids
     *   Normalize labels to ids
     *   Load tokenizer and model `microsoft/deberta-v3-base`
-*   Train a simple Text Classifier: **Created source code `TIC_Mastery.ipynb` using `microsoft/deberta-v3-base` combined with the Trainer API to classify 6 types of emotions.**
+*   Train a simple Text Classifier: **Created source code `step2_TIC_Mastery.ipynb` using `microsoft/deberta-v3-base` combined with the Trainer API to classify 6 types of emotions.**
     *   Select evaluation metrics: accuracy and f1-score
     *   Set number of epochs to 5 and batch size to 16
     *   Train the model
@@ -66,9 +65,9 @@
     *   Save and share the model: **Successfully pushed to Hugging Face Hub with a professional Model Card.**
     *   **Model Link:** [HalogenFlo/microsoft-deberta-v3-base-emotion-recognition](https://huggingface.co/HalogenFlo/microsoft-deberta-v3-base-emotion-recognition)
 *   **Models Selected for Step 2:**
-    1.  **DeBERTa-v3-base (`microsoft/deberta-v3-base`):** Main model used for Emotion Recognition. High performance with Disentangled Attention.
-    2.  **DistilBERT (`distilbert-base-uncased`):** Lightweight version for knowledge distillation research.
-    3.  **RoBERTa (`roberta-base`):** Robustly optimized BERT variant for performance benchmarking.
+    1.  **DeBERTa-v3-base (`microsoft/deberta-v3-base`) -> Best performing model
+    2.  **DistilBERT (`distilbert-base-uncased`)
+    3.  **RoBERTa (`roberta-base`)
 
 ---
 
@@ -91,9 +90,9 @@
 
 *   **Actions (Implementation):**
     *   **Models Selected for Step 3:**
-        1.  **ViT (`google/vit-base-patch16-224-in21k`):** Primary model for EMNIST classification using Transformer architecture.
-        2.  **ConvNeXt (`facebook/convnext-tiny-224`):** Modern CNN architecture for Transformer vs. CNN comparison.
-        3.  **RT-DETR (`Peadar/rt-detr-v2-s`):** Transformer-based real-time object detection research.
+        1.  **ViT (`google/vit-base-patch16-224-in21k`)
+        2.  **ConvNeXt (`facebook/convnext-tiny-224`)
+        3.  **RT-DETR (`Peadar/rt-detr-v2-s`)
     *   **Technical Adaptation:** 
         *   **Grayscale-to-RGB:** Converting 1-channel EMNIST images to 3-channel RGB for ViT compatibility.
         *   **Image Resizing:** Normalizing input size to 224x224 pixels using `AutoImageProcessor`.
