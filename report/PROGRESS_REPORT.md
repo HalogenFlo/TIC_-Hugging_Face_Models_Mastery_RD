@@ -90,7 +90,7 @@
 
 *   **Actions (Implementation):**
     *   **Models Selected for Step 3:**
-        1.  **ViT (`google/vit-base-patch16-224-in21k`)
+        1.  **ViT (`google/vit-base-patch16-224-in21k`) -> Best performing model
         2.  **ConvNeXt (`facebook/convnext-tiny-224`)
         3.  **RT-DETR (`Peadar/rt-detr-v2-s`)
     *   **Technical Adaptation:** 
