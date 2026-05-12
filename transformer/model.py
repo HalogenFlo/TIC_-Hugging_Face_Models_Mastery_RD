@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import math
+from transformers.modeling_outputs import SequenceClassifierOutput
 
 class PositionalEncoding(nn.Module):
     def __init__(self, d_model, dropout=0.1, max_length=5000):
@@ -108,7 +109,7 @@ class TransformerClassifier(nn.Module):
             for _ in range(n_layers)
         ])
         self.fc = nn.Linear(d_model, n_classes)
-    def forward(self, x, mask=None):
+    def forward(self, x, labels=None, mask=None):
         # x: (batch_size, seq_len)
         x = self.embedding(x) * math.sqrt(self.embedding.embedding_dim)
         # x: (batch_size, seq_len, d_model)
@@ -123,5 +124,15 @@ class TransformerClassifier(nn.Module):
         x = x.mean(dim=1)
         # x: (batch_size, d_model)
         
-        return self.fc(x)
-        # output: (batch_size, n_classes)
+        logits = self.fc(x)
+        # logits: (batch_size, n_classes)
+
+        loss = None
+        if labels is not None:
+            loss_fct = nn.CrossEntropyLoss()
+            loss = loss_fct(logits, labels)
+
+        return SequenceClassifierOutput(
+            loss=loss,
+            logits=logits
+        )
