@@ -5,11 +5,11 @@ import math
 from transformers.modeling_outputs import SequenceClassifierOutput
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0.1, max_length=5000):
+    def __init__(self, d_model, dropout=0.1, max_len=5000):
         super().__init__()
         self.dropout = nn.Dropout(dropout)
-        pe = torch.zeros(max_length, d_model)
-        position = torch.arange(0,max_length, dtype=torch.float).unsqueeze(1)
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0,max_len, dtype=torch.float).unsqueeze(1)
         div_term = torch.exp(torch.arange(0,d_model,2).float()*(-math.log(10000.0)/d_model))
         pe[:, 0::2] = torch.sin(position*div_term)
         pe[:, 1::2] = torch.cos(position*div_term)
@@ -88,9 +88,9 @@ class TransformerEncoderLayer(nn.Module):
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
-    def forward(self, x, mask=None):
+    def forward(self, x, attention_mask=None):
         # x: (batch_size, seq_len, d_model)
-        attn_output = self.attn(x,x,x,mask)
+        attn_output = self.attn(x,x,x,attention_mask)
         x = self.norm1(x + self.dropout(attn_output))
         # x: (batch_size, seq_len, d_model)
         
@@ -109,16 +109,20 @@ class TransformerClassifier(nn.Module):
             for _ in range(n_layers)
         ])
         self.fc = nn.Linear(d_model, n_classes)
-    def forward(self, x, labels=None, mask=None):
-        # x: (batch_size, seq_len)
-        x = self.embedding(x) * math.sqrt(self.embedding.embedding_dim)
+    def forward(self, input_ids, labels=None, attention_mask=None):
+        # input_ids: (batch_size, seq_len)
+        x = self.embedding(input_ids) * math.sqrt(self.embedding.embedding_dim)
         # x: (batch_size, seq_len, d_model)
         
         x = self.pos_encoding(x)
         # x: (batch_size, seq_len, d_model)
 
+        # Chuyển đổi attention_mask từ (B, S) sang (B, 1, 1, S) để broadcast được với attn_scores (B, H, S, S)
+        if attention_mask is not None and attention_mask.dim() == 2:
+            attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
+
         for layer in self.encoder_layer:
-            x = layer(x, mask)
+            x = layer(x, attention_mask)
             # x: (batch_size, seq_len, d_model)
 
         x = x.mean(dim=1)
@@ -148,14 +152,14 @@ class TransformerDecoderLayer(nn.Module):
         self.norm3 = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x, enc_output, src_mask=None, tgt_mask=None):
+    def forward(self, x, enc_output, attention_mask=None, tgt_mask=None):
         # 1. Masked Self-Attention (chỉ nhìn các token phía trước trong target)
         attn_output = self.self_attn(x, x, x, tgt_mask)
         x = self.norm1(x + self.dropout(attn_output))
 
         # 2. Cross-Attention (Query từ decoder, Key/Value từ encoder)
         # q = x, k = enc_output, v = enc_output
-        cross_attn_output = self.cross_attn(x, enc_output, enc_output, src_mask)
+        cross_attn_output = self.cross_attn(x, enc_output, enc_output, attention_mask)
         x = self.norm2(x + self.dropout(cross_attn_output))
 
         # 3. Feed Forward
@@ -174,19 +178,18 @@ class TransformerDecoder(nn.Module):
         ])
         self.fc_out = nn.Linear(d_model, vocab_size)
 
-    def forward(self, x, enc_output, src_mask=None, tgt_mask=None):
-        # x: (batch_size, tgt_seq_len)
+    def forward(self, input_ids, enc_output, attention_mask=None, tgt_mask=None):
+        # input_ids: (batch_size, tgt_seq_len)
         # enc_output: (batch_size, src_seq_len, d_model)
-        x = self.embedding(x) * math.sqrt(self.embedding.embedding_dim)
+        x = self.embedding(input_ids) * math.sqrt(self.embedding.embedding_dim)
         x = self.pos_encoding(x)
 
         for layer in self.layers:
-            x = layer(x, enc_output, src_mask, tgt_mask)
+            x = layer(x, enc_output, attention_mask, tgt_mask)
 
         return self.fc_out(x) # (batch_size, tgt_seq_len, vocab_size)
 
 class TransformerSeq2Seq(nn.Module):
-    """Mô hình Transformer đầy đủ (Encoder-Decoder) cho các bài toán như dịch thuật."""
     def __init__(self, src_vocab_size, tgt_vocab_size, d_model, n_heads, n_layers, d_ff, max_len=512, dropout=0.1):
         super().__init__()
         self.encoder = nn.ModuleList([
@@ -212,16 +215,18 @@ class TransformerSeq2Seq(nn.Module):
         no_peek_mask = torch.tril(torch.ones((tgt_len, tgt_len), device=tgt.device)).bool()
         return padding_mask & no_peek_mask
 
-    def forward(self, src, tgt):
-        src_mask = self.make_src_mask(src)
-        tgt_mask = self.make_tgt_mask(tgt)
+    def forward(self, input_ids, labels, attention_mask=None):
+        src_mask = attention_mask if attention_mask is not None else self.make_src_mask(input_ids)
+        if src_mask.dim() == 2:
+            src_mask = src_mask.unsqueeze(1).unsqueeze(2)
+        tgt_mask = self.make_tgt_mask(labels)
 
         # 1. Encoding
-        enc_x = self.src_embedding(src) * math.sqrt(self.src_embedding.embedding_dim)
+        enc_x = self.src_embedding(input_ids) * math.sqrt(self.src_embedding.embedding_dim)
         enc_x = self.src_pos_encoding(enc_x)
         for layer in self.encoder:
             enc_x = layer(enc_x, src_mask)
 
         # 2. Decoding
-        output = self.decoder(tgt, enc_x, src_mask, tgt_mask)
+        output = self.decoder(labels, enc_x, src_mask, tgt_mask)
         return output
