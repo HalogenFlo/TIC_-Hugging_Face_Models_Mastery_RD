@@ -1,0 +1,248 @@
+# Local dev stack: restate-server + one shared agent runtime image + one
+# container per agent dir.
+#
+# All agent services share `image: melvin-agent-runtime`. Bring up the
+# whole stack with `make up`, or a subset with
+# `docker compose up restate echo_agent`.
+
+# Common config for every agent service. Each service overrides
+# container_name, ports, and AGENT_DIR.
+x-agent-base: &agent-base
+  build:
+    context: .
+    dockerfile: runtime/Dockerfile
+  image: melvin-agent-runtime
+  depends_on:
+    - restate
+  restart: unless-stopped
+
+# Same shape as x-agent-base but with Playwright + Chromium baked in,
+# for agents that drive a headless browser via melvin_tools.browser.
+# ~600 MB image vs ~330 MB for the slim runtime; use only when needed.
+x-agent-browser-base: &agent-browser-base
+  build:
+    context: .
+    dockerfile: runtime/Dockerfile.browser
+  image: melvin-agent-runtime-browser
+  depends_on:
+    - restate
+  restart: unless-stopped
+
+services:
+  restate:
+    image: docker.io/restatedev/restate:1.6
+    container_name: melvin-restate
+    ports:
+      - "8080:8080" # ingress
+      - "9070:9070" # admin / Web UI
+      - "9071:9071" # gRPC admin
+    volumes:
+      - restate_data:/restate-data
+    environment:
+      RESTATE_LOG_FORMAT: pretty
+    restart: unless-stopped
+
+  echo_agent:
+    <<: *agent-base
+    container_name: melvin-echo-agent
+    ports: [ "9080:9080" ]
+    environment:
+      AGENT_DIR: /app/agents/echo_agent
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9080
+
+  tour_chat:
+    <<: *agent-base
+    container_name: melvin-tour-chat
+    ports: [ "9081:9081" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_chat
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9081
+
+  tour_error_handling:
+    <<: *agent-base
+    container_name: melvin-tour-error-handling
+    ports: [ "9082:9082" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_error_handling
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9082
+
+  tour_human_approval:
+    <<: *agent-base
+    container_name: melvin-tour-human-approval
+    ports: [ "9083:9083" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_human_approval
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9083
+
+  tour_human_approval_timeout:
+    <<: *agent-base
+    container_name: melvin-tour-human-approval-timeout
+    ports: [ "9084:9084" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_human_approval_timeout
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9084
+
+  tour_multi_agent:
+    <<: *agent-base
+    container_name: melvin-tour-multi-agent
+    ports: [ "9085:9085" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_multi_agent
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9085
+
+  tour_parallel_tools:
+    <<: *agent-base
+    container_name: melvin-tour-parallel-tools
+    ports: [ "9086:9086" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_parallel_tools
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9086
+
+  tour_remote_agents:
+    <<: *agent-base
+    container_name: melvin-tour-remote-agents
+    ports: [ "9087:9087" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_remote_agents
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9087
+
+  tour_sub_workflow:
+    <<: *agent-base
+    container_name: melvin-tour-sub-workflow
+    ports: [ "9088:9088" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_sub_workflow
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9088
+
+  tour_workflow_evaluator_optimizer:
+    <<: *agent-base
+    container_name: melvin-tour-evaluator-optimizer
+    ports: [ "9089:9089" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_workflow_evaluator_optimizer
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9089
+
+  tour_workflow_orchestrator:
+    <<: *agent-base
+    container_name: melvin-tour-workflow-orchestrator
+    ports: [ "9090:9090" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_workflow_orchestrator
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9090
+
+  tour_workflow_parallel:
+    <<: *agent-base
+    container_name: melvin-tour-workflow-parallel
+    ports: [ "9091:9091" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_workflow_parallel
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9091
+
+  tour_workflow_sequential:
+    <<: *agent-base
+    container_name: melvin-tour-workflow-sequential
+    ports: [ "9092:9092" ]
+    environment:
+      AGENT_DIR: /app/agents/tour_workflow_sequential
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9092
+
+  solar_au:
+    <<: *agent-base
+    container_name: melvin-solar-au
+    ports: [ "9093:9093" ]
+    environment:
+      AGENT_DIR: /app/agents/solar_au
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      PORT: 9093
+
+  solar_us:
+    <<: *agent-base
+    container_name: melvin-solar-us
+    ports: [ "9094:9094" ]
+    environment:
+      AGENT_DIR: /app/agents/solar_us
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      PORT: 9094
+
+  web_extract:
+    <<: *agent-base
+    container_name: melvin-web-extract
+    ports: [ "9095:9095" ]
+    environment:
+      AGENT_DIR: /app/agents/web_extract
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9095
+
+  # Canonical browser-driven example. Uses the heavier browser image
+  # (Playwright + Chromium pre-installed). Copy this block as a starting
+  # point for new browser-using agents.
+  page_fetcher:
+    <<: *agent-browser-base
+    container_name: melvin-page-fetcher
+    ports: [ "9098:9098" ]
+    environment:
+      AGENT_DIR: /app/agents/page_fetcher
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9098
+
+  # AI-driven extraction example. Same browser image as page_fetcher but
+  # uses Stagehand's local mode (server="local") on top of CDPSession for
+  # act/extract/observe. Needs the [ai] extra (already baked into the image).
+  page_extractor:
+    <<: *agent-browser-base
+    container_name: melvin-page-extractor
+    ports: [ "9099:9099" ]
+    environment:
+      AGENT_DIR: /app/agents/page_extractor
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      # Stagehand's local SEA binary reads this when model_name=google/*.
+      # Set it to the same value as GEMINI_API_KEY.
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GEMINI_API_KEY:-}
+      # Stagehand SDK requires this env var to be set (any non-empty value);
+      # local mode does NOT send traffic to api.browserbase.com.
+      BROWSERBASE_API_KEY: local
+      # Optional override if the default google/gemini-3.1-flash isn't
+      # recognised by Stagehand's local registry yet:
+      # STAGEHAND_MODEL: google/gemini-3-flash-preview
+      PORT: 9099
+
+  # AI-driven form fill + submit example. Uses Stagehand's act() to
+  # resolve form fields by natural-language description and type/click
+  # them — no fragile CSS selectors in the agent code.
+  form_submitter:
+    <<: *agent-browser-base
+    container_name: melvin-form-submitter
+    ports: [ "9100:9100" ]
+    environment:
+      AGENT_DIR: /app/agents/form_submitter
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GEMINI_API_KEY:-}
+      BROWSERBASE_API_KEY: local
+      PORT: 9100
+
+  banking77:
+    <<: *agent-base
+    container_name: melvin-banking77
+    ports: ["9096:9096"]
+    environment:
+      AGENT_DIR: /app/agents/banking77
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 9096
+volumes:
+  restate_data:
+    name: melvin_restate_data

@@ -1,0 +1,4 @@
+name: Banking77Agent
+agent: agent.yaml
+handler: run
+input_schema: schemas:Banking77Request
