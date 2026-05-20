@@ -82,6 +82,34 @@ def predict_character(image):
         print(f"Error predicting character: {e}")
         return {}
 
+def predict_character_upload(image):
+    if image is None:
+        return {}
+    
+    try:
+        pil_image = image if isinstance(image, Image.Image) else Image.open(image)
+
+        gray_image = pil_image.convert("L")
+        
+        avg_color = np.mean(np.array(gray_image))
+        if avg_color > 127:
+            gray_image = ImageOps.invert(gray_image)
+        rgb_image = gray_image.convert("RGB").resize((224, 224))
+        
+        inputs = process(images=rgb_image, return_tensors="pt").to(device)
+        with torch.no_grad():
+            outputs = emnist_model(**inputs)
+        
+        probs = torch.nn.functional.softmax(outputs.logits, dim=-1)[0]
+        topk_probs, topk_idx = torch.topk(probs, 5)
+        
+        return {
+            emnist_labels[int(idx.item())]: float(val.item())
+            for val, idx in zip(topk_probs, topk_idx)
+        }
+    except Exception as e:
+        print(f"Error predicting from uploaded image: {e}")
+        return {}
 
 
 print("Loading llm processor and model...")
@@ -165,20 +193,41 @@ with gr.Blocks(css=custom_css, title="TIC AI Hub") as demo:
         # Tab 2: Handwriting Recognition
         with gr.TabItem("Handwriting Recognition"):
             gr.Markdown("### Recognize handwritten characters and digits using ViT")
-            with gr.Row():
-                with gr.Column():
-                    img_input = gr.Sketchpad(
-                        label="Draw a character on the sketchpad below", 
-                        type="pil"
-                    )
+            with gr.Tabs():
+                # Sub-tab: Vẽ tay
+                with gr.TabItem("✏️ Draw"):
                     with gr.Row():
-                        clear_btn_h = gr.Button("Clear", elem_classes="secondary-btn")
-                        submit_btn_h = gr.Button("Predict", elem_classes="primary-btn")
-                with gr.Column():
-                    lbl_handwrite = gr.Label(label="Top 5 Predicted Characters", num_top_classes=5)
-            
-            submit_btn_h.click(fn=predict_character, inputs=img_input, outputs=lbl_handwrite)
-            clear_btn_h.click(fn=lambda: (None, None), outputs=[img_input, lbl_handwrite])
+                        with gr.Column():
+                            img_input = gr.Sketchpad(
+                                label="Draw a character on the sketchpad below", 
+                                type="pil"
+                            )
+                            with gr.Row():
+                                clear_btn_h = gr.Button("Clear", elem_classes="secondary-btn")
+                                submit_btn_h = gr.Button("Predict", elem_classes="primary-btn")
+                        with gr.Column():
+                            lbl_handwrite = gr.Label(label="Top 5 Predicted Characters", num_top_classes=5)
+                    
+                    submit_btn_h.click(fn=predict_character, inputs=img_input, outputs=lbl_handwrite)
+                    clear_btn_h.click(fn=lambda: (None, None), outputs=[img_input, lbl_handwrite])
+                
+                # Sub-tab: Upload ảnh
+                with gr.TabItem("📷 Upload Image"):
+                    with gr.Row():
+                        with gr.Column():
+                            img_upload = gr.Image(
+                                label="Upload an image of a handwritten character",
+                                type="pil",
+                                sources=["upload", "clipboard"]
+                            )
+                            with gr.Row():
+                                clear_btn_u = gr.Button("Clear", elem_classes="secondary-btn")
+                                submit_btn_u = gr.Button("Predict", elem_classes="primary-btn")
+                        with gr.Column():
+                            lbl_upload = gr.Label(label="Top 5 Predicted Characters", num_top_classes=5)
+                    
+                    submit_btn_u.click(fn=predict_character_upload, inputs=img_upload, outputs=lbl_upload)
+                    clear_btn_u.click(fn=lambda: (None, None), outputs=[img_upload, lbl_upload])
             
         # Tab 3: Chatbot
         with gr.TabItem("AI Chatbot"):
