@@ -348,8 +348,6 @@ Below is the empirical benchmark showcasing the massive efficiency of Dataset St
     *   Wrote and verified a robust, fully documented hands-on notebook: [step8_TIC_Mastery.ipynb](file:///c:/Users/Admin/Desktop/TIC_Project/notebook/step8_TIC_Mastery.ipynb).
     *   Verified Hugging Face token WRITE access via automated unit testing.
 
----
-
 ### Step 9: Mastering Hugging Face Spaces (Interactive Demos)
 *   **Status: COMPLETED**
 *   **Objective:** Design, package, and automate the deployment of a highly interactive multi-task web application (Multi-Task AI Hub) to showcase the R&D models trained in previous steps.
@@ -359,11 +357,19 @@ Below is the empirical benchmark showcasing the massive efficiency of Dataset St
     3.  **Unified Multi-Task Pipeline Integration:** Built a single, responsive `app.py` hosting:
         *   *Tab 1 (Emotion Classifier):* Real-time text classification based on `HalogenFlo/microsoft-deberta-v3-base-emotion-recognition`.
         *   *Tab 2 (Handwritten Recognition):* Handwriting Sketchpad & Image Upload tool integrated with `HalogenFlo/vit-emnist-byclass`.
-        *   *Tab 3 (AI Chatbot):* A conversation interface with next-token streaming generation using the `HalogenFlo/Qwen2.5-0.5B-Instruct-lora-finetuned` SFT LLM model.
-    4.  **Full MLOps Automation via SDK:** Programmatically initialized the Hugging Face Space repository using the `huggingface_hub` Python SDK, ensuring programmatic zero-setup synchronization of local files (`app.py`, `requirements.txt`) directly to the Space.
+        *   *Tab 3 (AI Chatbot):* A conversation interface with next-token streaming generation using the Qwen2.5-0.5B SFT LLM model.
+    4.  **Advanced Edge-Case Debugging & Image Processing:**
+        *   *Sketchpad RGBA Fix:* Resolved `AttributeError: 'dict' object has no attribute 'convert'` in Gradio 4+ by standardizing sketchpad output using `Image.alpha_composite` over a white background.
+        *   *EMNIST Compatibility:* Implemented automatic light-background detection and `ImageOps.invert` to convert handwriting drawing inputs into standard white-strokes-on-black-background.
+        *   *ChatInterface Alignment:* Refined chatbot function signatures to comply with Gradio requirements `(message, history)` and returned streaming response values correctly.
+    5.  **Full MLOps Automation & API Space Deployment:** Programmatically set up automatic authentication using the local `.env` token and deployed the fully verified codebase directly to the Hugging Face Space: **[HalogenFlo/TIC_Guide](https://huggingface.co/spaces/HalogenFlo/TIC_Guide)**.
+    6.  **Dependency Environment Optimization (pip freeze):**
+        *   **Root `requirements.txt`:** Fully documented and frozen all active libraries (140+ packages including PyTorch, transformers, accelerate, unsloth, triton, and cuda/nvidia specific packages) to replicate the local WSL GPU development environment.
+        *   **Space `requirements.txt`:** Strictly filtered the `pip freeze` list to retain only 67 essential web-app dependencies (excluding `nvidia-*`, `cuda-*`, and `triton`) to prevent container building crashes on Hugging Face Spaces.
+        *   **Deployment Script (`deploy.py`):** Programmatically uploaded app assets directly via `huggingface_hub` API, eliminating local Git workspace binding conflicts.
 
 > [!TIP]
-> **Production Note:** The complete application and deployment pipeline have been fully coded, structured, and saved within the project files. A comprehensive walkthrough and step-by-step interactive runner are provided in [step9_TIC_Mastery.ipynb](file:///c:/Users/Admin/Desktop/TIC_Project/notebook/step9_TIC_Mastery.ipynb).
+> **Production Note:** The complete application, deployment scripts, and comprehensive comparative analysis have been successfully coded and deployed. An interactive runner and full deployment guide can be accessed in [step9_TIC_Mastery.ipynb](file:///c:/Users/Admin/Desktop/TIC_Project/notebook/step9_TIC_Mastery.ipynb) and [huggingface_spaces_deployment_guide.md](file:///C:/Users/Admin/.gemini/antigravity/brain/16775b37-6436-44de-acc6-5bc175cd2c19/huggingface_spaces_deployment_guide.md).
 
 ---
 *This report is automatically updated to track the Hugging Face Mastery roadmap.*
