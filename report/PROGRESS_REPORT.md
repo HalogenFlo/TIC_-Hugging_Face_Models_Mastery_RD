@@ -450,7 +450,7 @@ Enterprises must define technical business requirements in parallel with setting
 #### **Step 3: Select – Benchmarking & Total Cost of Ownership (TCO)**
 Run benchmarks on the standardized dataset prepared in Step 2, selecting the optimal model based on the Total Cost of Ownership (TCO).
 
-##### **Recommended Benchmarking Framework (Applicable in 2026)**
+##### ** Benchmarking Framework**
 
 | Metric | Closed-Source APIs (e.g., GPT-4o) | Mid-Range Open-Source (e.g., Qwen 2.5 14B) |
 | :--- | :--- | :--- |
