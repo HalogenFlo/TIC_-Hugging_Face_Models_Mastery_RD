@@ -1,6 +1,6 @@
 # TIC Project Progress Report - Hugging Face Mastery
 
-## Date Updated: 2026-05-22
+## Date Updated: 2026-05-27
 ## Status: **Step 1 - COMPLETED**
 ## Status: **Step 2 - COMPLETED** 
 ## Status: **Step 3 - COMPLETED**
@@ -12,6 +12,7 @@
 ## Status: **Step 9 - COMPLETED**
 ## Status: **Step 10 - COMPLETED**
 ## Status: **Step 11 - COMPLETED**
+## Status: **Step 12 - COMPLETED**
 
 ---
 
@@ -93,7 +94,7 @@
 | 11 | 0.0112 | 0.5152 | 0.9325 | 0.9075 |
 
 > [!TIP]
-> Model đạt độ chính xác cao nhất ở Epoch 10 (93.95%), tuy nhiên chỉ số F1 tốt nhất và Validation Loss ổn định nhất nằm ở các epoch sớm hơn (6-10), cho thấy model hội tụ rất tốt.
+> The model achieves the highest accuracy at Epoch 10 (93.95%), however, the best F1-score and the most stable Validation Loss are located in the earlier epochs (6-10), indicating that the model converges very well.
 *   **Models Selected for Step 2:**
     1.  **DeBERTa-v3-base (`microsoft/deberta-v3-base`) -> Best performing model
     2.  **DistilBERT (`distilbert-base-uncased`)
@@ -370,8 +371,7 @@ Below is the empirical benchmark showcasing the massive efficiency of Dataset St
         *   **Space `requirements.txt`:** Strictly filtered the `pip freeze` list to retain only 67 essential web-app dependencies (excluding `nvidia-*`, `cuda-*`, and `triton`) to prevent container building crashes on Hugging Face Spaces.
         *   **Deployment Script (`deploy.py`):** Programmatically uploaded app assets directly via `huggingface_hub` API, eliminating local Git workspace binding conflicts.
 
-> [!TIP]
-> **Production Note:** The complete application, deployment scripts, and comprehensive comparative analysis have been successfully coded and deployed. An interactive runner and full deployment guide can be accessed in [step9_TIC_Mastery.ipynb](file:///c:/Users/Admin/Desktop/TIC_Project/notebook/step9_TIC_Mastery.ipynb) and [huggingface_spaces_deployment_guide.md](file:///C:/Users/Admin/.gemini/antigravity/brain/16775b37-6436-44de-acc6-5bc175cd2c19/huggingface_spaces_deployment_guide.md).
+> **Production Note:** The complete application, deployment scripts, and comprehensive comparative analysis have been successfully coded and deployed. An interactive runner and full deployment guide can be accessed in [step9_TIC_Mastery.ipynb](file:///c:/Users/Admin/Desktop/TIC_Project/notebook/step9_TIC_Mastery.ipynb).
 
 ### Step 10: Frontier LLM Training Research (Pre-training, Post-training & Alignment)
 *   **Status: COMPLETED**
@@ -485,5 +485,24 @@ Package the final model and transition it to live production with rigorous safet
         *   *Drift Detection:* Detect performance degradation or semantic shift in model outputs over time.
         *   *Cost Monitoring:* Trigger alerts when infrastructure utilization exceeds budgeted thresholds.
         *   *Toxicity & Safety:* Audit and filter toxic content or biased behaviors dynamically.
+
+---
+
+### Step 12: Production Deployment on Vertex AI & End-to-End Integration
+*   **Status: COMPLETED**
+*   **Objective:** Deploy the fine-tuned model (QLoRA) to the production environment on Google Cloud Platform (GCP) Vertex AI, test real-world responsiveness, and establish resource clean-up management workflows.
+*   **Key Implementations & Learning Outcomes:**
+    1.  **Vertex AI Integration (Model Garden):** Researched and successfully deployed the model via Hugging Face integration using a pre-optimized Text Generation Inference (TGI) container from Google Cloud (`us-docker.pkg.dev/deeplearning-platform-release/gcs-fuse/huggingface-text-generation-inference`).
+    2.  **Custom Serving Container (Docker & Artifact Registry):**
+        *   Established a workflow to package the custom model using a local Dockerfile, and created a Docker repository on Google Artifact Registry to push the container to GCP.
+        *   Uploaded the trained QLoRA model weights to Google Cloud Storage (GCS) as a long-term storage artifact.
+        *   Uploaded the model to the Vertex AI Model Registry, specifying the correct GCS URI and Custom Container URL on port `8080`.
+    3.  **Endpoint Deployment & Scaling:** Deployed the model on a dedicated `n1-standard-2` machine instance, and set minimum/maximum replica counts to serve actual production traffic.
+    4.  **Endpoint Verification & Clean up:**
+        *   Verified real-time inference API calls via the `google-cloud-aiplatform` SDK by sending prediction requests and outputting accurate, low-latency results.
+        *   Performed resource clean-up using `undeploy_all()` and `delete()` to optimize operational costs for the enterprise.
+
+> **Production Note:** The complete deployment codebase for both methods (pre-built TGI container and custom serving container) has been tested, cleared of all syntax errors, and runs perfectly in [step12_TIC_Mastery.ipynb](file:///c:/Users/Admin/Desktop/TIC_Project/notebook/step12_TIC_Mastery.ipynb).
+
 ---
 *This report is automatically updated to track the Hugging Face Mastery roadmap.*

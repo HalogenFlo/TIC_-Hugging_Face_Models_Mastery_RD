@@ -1,0 +1,1041 @@
+<!--
+=================================================================================
+Chức năng: Dashboard hướng dẫn triển khai mô hình lên Vertex AI tối ưu chi phí cực hạn.
+Lý do tạo: Re-UI giao diện cao cấp, chuyên nghiệp và 100% dễ đọc cho Lộ trình Hugging Face Mastery.
+Trích dẫn/Tài liệu tham khảo: Google Cloud Vertex AI SDK & Hugging Face Hub Documentation.
+=================================================================================
+-->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertex AI MLOps Dashboard - Hugging Face Mastery</title>
+    
+    <!-- Google Fonts: Inter Việt hóa tối ưu cho thiết kế UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-primary: #060913;
+            --bg-secondary: #0d1222;
+            --bg-glass: rgba(13, 18, 34, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.05);
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #06b6d4;
+            --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+            
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --code-bg: #03060f;
+            --sidebar-width: 290px;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Status Colors */
+            --color-emerald: #10b981;
+            --color-cyan: #06b6d4;
+            --color-violet: #8b5cf6;
+            --color-rose: #f43f5e;
+            --color-yellow: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            overflow-x: hidden;
+            display: flex;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 5% 10%, rgba(139, 92, 246, 0.15) 0%, transparent 35%),
+                radial-gradient(circle at 95% 85%, rgba(6, 182, 212, 0.15) 0%, transparent 35%);
+            background-attachment: fixed;
+            line-height: 1.5;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Sidebar Glassmorphism */
+        aside {
+            width: var(--sidebar-width);
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid var(--border-glass);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logo-area i {
+            font-size: 1.75rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.3));
+        }
+
+        .logo-area h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.92rem;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }
+
+        .nav-links a:hover, .nav-links li.active a {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.04);
+            transform: translateX(5px);
+        }
+
+        .nav-links li.active a {
+            background: rgba(139, 92, 246, 0.12);
+            border-color: rgba(139, 92, 246, 0.25);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
+            color: #c084fc;
+        }
+
+        /* Main Content */
+        main {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 3rem 4rem;
+            max-width: 1250px;
+        }
+
+        header {
+            margin-bottom: 3.5rem;
+            position: relative;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.85rem;
+            background: rgba(139, 92, 246, 0.12);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            color: #c084fc;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .badge-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            vertical-align: middle;
+            margin-left: 0.5rem;
+        }
+
+        .badge-local {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .badge-cloud {
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+
+        h1 {
+            font-size: 2.75rem;
+            font-weight: 800;
+            line-height: 1.25;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 40%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 900px;
+            line-height: 1.65;
+        }
+
+        /* Metrics Grid Dashboard styling */
+        .metrics-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 3rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transition-smooth);
+        }
+
+        .metric-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        .metric-info h4 {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.2rem;
+            font-weight: 600;
+        }
+
+        .metric-info p {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Sections */
+        section {
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-glass);
+            border-radius: 18px;
+            padding: 2.75rem;
+            margin-bottom: 3.5rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            transition: var(--transition-smooth);
+        }
+
+        section:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+        }
+
+        h2.section-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
+        }
+
+        h2.section-title i {
+            color: var(--accent-secondary);
+            filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.3));
+        }
+
+        /* Timeline & Step heading */
+        .step-heading {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #a78bfa;
+            margin: 2.25rem 0 0.85rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .step-heading i {
+            font-size: 1rem;
+            color: var(--accent-secondary);
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.65;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Code Block Container */
+        .code-container {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.015);
+            padding: 0.75rem 1.35rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .code-lang {
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--accent-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: var(--transition-smooth);
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        .copy-btn.copied {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.35);
+            color: #34d399;
+        }
+
+        pre {
+            padding: 1.35rem;
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+        }
+
+        /* Alert / Callout Boxes */
+        .callout {
+            background: rgba(6, 182, 212, 0.03);
+            border-left: 4px solid var(--accent-secondary);
+            padding: 1.25rem 1.5rem;
+            border-radius: 0 14px 14px 0;
+            margin: 1.75rem 0;
+            border-top: 1px solid rgba(6, 182, 212, 0.03);
+            border-right: 1px solid rgba(6, 182, 212, 0.03);
+            border-bottom: 1px solid rgba(6, 182, 212, 0.03);
+        }
+
+        .callout-title {
+            font-weight: 700;
+            color: var(--accent-secondary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .callout.warning {
+            background: rgba(244, 63, 94, 0.03);
+            border-left-color: var(--color-rose);
+            border-top: 1px solid rgba(244, 63, 94, 0.03);
+            border-right: 1px solid rgba(244, 63, 94, 0.03);
+            border-bottom: 1px solid rgba(244, 63, 94, 0.03);
+        }
+
+        .callout.warning .callout-title {
+            color: #f43f5e;
+        }
+
+        /* Split-View Layout */
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin: 1.75rem 0;
+        }
+
+        @media (min-width: 992px) {
+            .split-view {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .split-pane {
+            background: rgba(255, 255, 255, 0.012);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 14px;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition-smooth);
+        }
+
+        .split-pane:hover {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .split-pane.local-pane {
+            border-left: 4px solid var(--color-emerald);
+        }
+
+        .split-pane.cloud-pane {
+            border-left: 4px solid var(--color-rose);
+        }
+
+        /* Lists */
+        ul {
+            list-style-type: none;
+        }
+
+        ul li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+
+        ul li::before {
+            content: "\f058"; /* check icon */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            top: 0.1rem;
+            font-size: 0.95rem;
+        }
+
+        .local-pane ul li::before {
+            color: var(--color-emerald);
+        }
+
+        .cloud-pane ul li::before {
+            content: "\f06a"; /* exclamation icon */
+            color: var(--color-rose);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 6rem;
+            padding: 2.5rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        footer a {
+            color: var(--accent-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+        }
+
+        footer a:hover {
+            color: var(--accent-primary);
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            body {
+                flex-direction: column;
+            }
+            aside {
+                width: 100%;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-glass);
+                padding: 1.5rem;
+            }
+            main {
+                margin-left: 0;
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside>
+        <div class="logo-area">
+            <i class="fa-solid fa-brain"></i>
+            <h2>TIC MLOps Hub</h2>
+        </div>
+        <ul class="nav-links">
+            <li class="active"><a href="#cost-saving"><i class="fa-solid fa-piggy-bank"></i> 💸 Tối Ưu Chi Phí</a></li>
+            <li><a href="#prerequisites"><i class="fa-solid fa-sliders"></i> 1. Chuẩn Bị GCP</a></li>
+            <li><a href="#model-garden"><i class="fa-brands fa-hugging-face"></i> 2. Cách 1: Model Garden (CPU)</a></li>
+            <li><a href="#custom-serving"><i class="fa-solid fa-gears"></i> 3. Cách 2: Custom Serving (CPU)</a></li>
+            <li><a href="#cleanup"><i class="fa-solid fa-trash-can"></i> 4. Dọn Dẹp Endpoint</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+        <header>
+            <span class="badge">Vertex AI Production Guide</span>
+            <h1>Quy Trình Triển Khai Vertex AI Tối Ưu Ngân Sách</h1>
+            <p class="subtitle">Tài liệu thực hành MLOps chuyên sâu tập trung 100% vào <strong>Google Cloud Vertex AI</strong>, hướng dẫn từng bước thiết lập hạ tầng thực tế với **chi phí tối thiểu (CPU-only, Docker mỏng nhẹ, Tự động hủy tài nguyên ngầm)**.</p>
+        </header>
+
+        <!-- Metrics Dashboard Bar -->
+        <div class="metrics-bar">
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-emerald);">
+                    <i class="fa-solid fa-signal"></i>
+                </div>
+                <div class="metric-info">
+                    <h4>Vertex Status</h4>
+                    <p>ACTIVE (ONLINE)</p>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(6, 182, 212, 0.1); color: var(--color-cyan);">
+                    <i class="fa-solid fa-server"></i>
+                </div>
+                <div class="metric-info">
+                    <h4>Target Engine</h4>
+                    <p>FastAPI (CPU-only)</p>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--color-violet);">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div class="metric-info">
+                    <h4>Machine Size</h4>
+                    <p>n1-standard-2</p>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--color-yellow);">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div class="metric-info">
+                    <h4>Est. Price</h4>
+                    <p>~$0.09 / Hour</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 0: Cost Saving Strategy -->
+        <section id="cost-saving">
+            <h2 class="section-title"><i class="fa-solid fa-piggy-bank"></i> Chiến Lược Tiết Kiệm Chi Phí Cực Hạn (Cost-Saving Strategy)</h2>
+            <p>Triển khai mô hình AI lên Cloud thường rất tốn kém (hàng chục đến hàng trăm USD/tháng do chi phí GPU). Để giải quyết bài toán ngân sách hạn hẹp của học viên và doanh nghiệp nhỏ, chúng ta sẽ áp dụng 4 nguyên lý tối ưu chi phí cực hạn sau:</p>
+            
+            <div class="split-view">
+                <div class="split-pane cloud-pane">
+                    <div style="margin-bottom: 0.75rem;">
+                        <span class="badge-inline badge-cloud" style="background: rgba(244, 63, 94, 0.12); border-color: rgba(244, 63, 94, 0.2); color: #f43f5e;">⚠️ Lãng Phí Nguy Hiểm</span>
+                    </div>
+                    <ul>
+                        <li>Thuê GPU (T4, L4, A100) để test mô hình nhỏ, tiêu tốn <strong>$0.35 - $3.50 mỗi giờ</strong> vô ích.</li>
+                        <li>Đóng gói Docker Image khổng lồ chứa CUDA (5GB - 12GB) làm tăng phí lưu trữ trên Artifact Registry.</li>
+                        <li>Để quên Endpoint chạy 24/7 sau khi hoàn thành bài tập, phát sinh hóa đơn hàng trăm USD vào cuối tháng.</li>
+                    </ul>
+                </div>
+                
+                <div class="split-pane local-pane">
+                    <div style="margin-bottom: 0.75rem;">
+                        <span class="badge-inline badge-local">💡 Giải Pháp Tiết Kiệm 95% Chi Phí</span>
+                    </div>
+                    <ul>
+                        <li><strong>Chạy CPU-only:</strong> Mô hình <code>Qwen2.5-0.5B</code> cực kỳ nhỏ (~1GB), chạy mượt mà trên máy ảo CPU rẻ tiền (như <code>n1-standard-2</code>).</li>
+                        <li><strong>Docker Slim Image:</strong> Dùng image base Python siêu nhẹ và chỉ cài đặt PyTorch phiên bản CPU để giảm dung lượng Docker xuống &lt;1.2GB.</li>
+                        <li><strong>Tự động Hủy Tài Nguyên (Undeploy):</strong> Quy tắc vàng: <em>Deploy -> Kiểm thử nhanh -> Undeploy & Xóa Endpoint ngay lập tức</em> (chỉ tốn vài cent phí chạy thử).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="callout" style="background: rgba(16, 185, 129, 0.02); border-left-color: #10b981; border-color: rgba(16,185,129,0.08);">
+                <div class="callout-title" style="color: #10b981;"><i class="fa-solid fa-circle-check"></i> Chìa Khóa Kỹ Thuật: GCP Storage FUSE</div>
+                <p style="margin-bottom: 0; font-size: 0.95rem;">
+                    Vertex AI tự động liên kết (mount) thùng chứa Cloud Storage <code>gs://your-bucket</code> thành thư mục nội bộ <code>/gcs/your-bucket</code> bên trong Container Docker khi deploy. 
+                    Nhờ vậy, container chỉ cần đọc weights trực tiếp từ ổ đĩa nội bộ mà không cần viết code tải file phức tạp, giúp giảm thiểu tối đa băng thông mạng (Data Egress) và giảm dung lượng RAM cần thiết.
+                </p>
+            </div>
+        </section>
+
+        <!-- SECTION 1: Prerequisites -->
+        <section id="prerequisites">
+            <h2 class="section-title"><i class="fa-solid fa-sliders"></i> 1. Chuẩn Bị & Xác Thực Google Cloud (GCP)</h2>
+            <p>Để lập trình và giao tiếp với Google Cloud Platform, hãy thực hiện cài đặt các thư viện và xác thực tài khoản:</p>
+            
+            <div class="step-heading"><i class="fa-solid fa-circle-play"></i> Bước 1.1: Cài đặt Python SDK cho Vertex AI</div>
+            <p>Cài đặt các gói thư viện Python chính thức từ Google Cloud để quản lý model registry và endpoints:</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">bash</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>pip install google-cloud-aiplatform python-dotenv fastapi uvicorn</code></pre>
+            </div>
+
+            <div class="step-heading"><i class="fa-solid fa-circle-play"></i> Bước 1.2: Xác thực tài khoản Google Cloud dưới terminal</div>
+            <p>Chạy các lệnh xác thực sau để cấp quyền cho code Python nội bộ gọi API lên GCP:</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">bash</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code># 1. Đăng nhập tài khoản Google Cloud của bạn
+gcloud auth login
+
+# 2. Cấu hình credentials mặc định cho các ứng dụng Python
+gcloud auth application-default login
+
+# 3. Đặt dự án mặc định của bạn
+gcloud config set project [PROJECT_ID_CỦA_BẠN]</code></pre>
+            </div>
+
+            <div class="step-heading"><i class="fa-solid fa-circle-play"></i> Bước 1.3: Cấu hình biến môi trường (File <code>.env</code>)</div>
+            <p>Tạo file cấu hình tập trung để lưu trữ các thông tin hạ tầng GCP:</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">env</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code># --- CẤU HÌNH HẠ TẦNG GCP ---
+GCP_PROJECT_ID=ticmastery-project
+GCP_REGION=us-central1
+GCP_BUCKET_URI=gs://tic-mastery-bucket
+HUGFACE_TOKEN=hf_your_access_token_here</code></pre>
+            </div>
+        </section>
+
+        <!-- SECTION 2: Model Garden -->
+        <section id="model-garden">
+            <h2 class="section-title">
+                <i class="fa-brands fa-hugging-face"></i> 2. Cách 1: Triển Khai Nhanh qua Deep Learning Container (DLC)
+            </h2>
+            <p>Phương pháp triển khai nhanh sử dụng Container tối ưu hóa sẵn của Google (Hugging Face Deep Learning Container) để deploy trực tiếp một mô hình nền tảng từ Hugging Face Hub (ví dụ: <code>Qwen/Qwen2.5-0.5B-Instruct</code>) lên một máy ảo CPU giá rẻ.</p>
+
+            <div class="callout warning">
+                <div class="callout-title"><i class="fa-solid fa-triangle-exclamation"></i> Bí Quyết Tiết Kiệm</div>
+                <p style="margin-bottom: 0; font-size: 0.95rem;">
+                    Trong tham số <code>model.deploy()</code>, hãy chỉ định <code>machine_type="n1-standard-2"</code> (hoặc <code>n1-standard-4</code>) và <strong>hoàn toàn không khai báo GPU</strong> (như accelerator_type). 
+                    Máy ảo CPU của GCP có chi phí cực kỳ rẻ (chỉ khoảng ~$0.09 - $0.19 mỗi giờ), giúp bạn thoải mái thử nghiệm mà không lo cạn kiệt tài khoản.
+                </p>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">python</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>import os
+from google.cloud import aiplatform
+
+# Khởi tạo Vertex AI SDK với project và region của bạn
+aiplatform.init(
+    project=os.environ.get("GCP_PROJECT_ID", "ticmastery-project"),
+    location=os.environ.get("GCP_REGION", "us-central1")
+)
+
+# 1. Đăng ký mô hình sử dụng HF Deep Learning Container của Google (CPU serving)
+model = aiplatform.Model.upload(
+    display_name="hf-qwen-cpu-model",
+    # Sử dụng image serving CPU tiêu chuẩn để giảm thiểu chi phí phần cứng
+    serving_container_image_uri="us-docker.pkg.dev/deeplearning-platform-release/gcs-fuse/huggingface-text-generation-inference.1-3.py310",
+    serving_container_environment_variables={
+        "HF_MODEL_ID": "Qwen/Qwen2.5-0.5B-Instruct",
+        "HF_TASK": "text-generation",
+        "MAX_INPUT_LENGTH": "1024",
+        "MAX_TOTAL_TOKENS": "2048"
+    }
+)
+
+print("👉 Đang tạo endpoint...")
+endpoint = aiplatform.Endpoint.create(display_name="qwen-cpu-endpoint")
+
+# 2. Deploy lên máy ảo CPU giá rẻ n1-standard-2 (Không sử dụng GPU!)
+print("🚀 Đang deploy mô hình lên Endpoint CPU (Thời gian deploy khoảng 5-10 phút)...")
+model.deploy(
+    endpoint=endpoint,
+    machine_type="n1-standard-2", # Cấu hình 2 vCPUs, 7.5GB RAM - Tiết kiệm tối đa!
+    min_replica_count=1,
+    max_replica_count=1
+)
+print(f"✅ Đã deploy thành công! Endpoint ID: {endpoint.resource_name}")</code></pre>
+            </div>
+        </section>
+
+        <!-- SECTION 3: Custom Serving -->
+        <section id="custom-serving">
+            <h2 class="section-title">
+                <i class="fa-solid fa-gears"></i> 3. Cách 2: Triển Khai Tùy Biến (Custom Serving Container)
+            </h2>
+            <p>Áp dụng khi bạn đã tinh chỉnh mô hình (QLoRA) và muốn đóng gói một API Server FastAPI tùy biến logic riêng. Container được tối ưu hóa cực kỳ mỏng nhẹ chạy độc quyền trên CPU để tiết kiệm dung lượng Artifact Registry và RAM hệ thống.</p>
+
+            <div class="step-heading"><i class="fa-solid fa-circle-play"></i> Bước 3.1: Viết API Server FastAPI tối ưu CPU (<code>app/main.py</code>)</div>
+            <p>Code FastAPI được thiết kế tự động đọc weights được mount từ GCS thông qua FUSE và tự động cấu hình chạy trên CPU:</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">python</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>import os
+import torch
+from fastapi import FastAPI, Request
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+app = FastAPI()
+
+# 1. TỰ ĐỘNG ĐỌC MÔ HÌNH QUA GCS FUSE:
+# Vertex AI sẽ tự động lưu đường dẫn bucket mount vào biến môi trường AIP_STORAGE_URI
+GCS_URI = os.environ.get("AIP_STORAGE_URI", "")
+MODEL_PATH = GCS_URI.replace("gs://", "/gcs/") if GCS_URI.startswith("gs://") else "/workspace/model"
+
+print(f"👉 [Vertex AI Serving] Nạp model weights từ GCS FUSE: {MODEL_PATH}")
+
+# 2. Nạp Tokenizer và Model
+tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+# Nạp mô hình ở chế độ float32/float16 tối ưu cho suy luận CPU
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_PATH, 
+    torch_dtype=torch.float32, 
+    low_cpu_mem_usage=True
+)
+
+# Khóa cứng chạy trên CPU để tránh tìm kiếm thư viện CUDA gây crash
+device = "cpu"
+model.to(device)
+print(f"✅ Hệ thống phục vụ chạy thành công trên: {device}")
+
+@app.get("/health")
+def health_check():
+    # Điểm kiểm tra sức khỏe bắt buộc của Vertex AI (Health Check)
+    return {"status": "healthy"}
+
+@app.post("/predict")
+async def predict(request: Request):
+    # API nhận định dạng JSON chuẩn của Vertex AI: {"instances": ["câu hỏi 1", "câu hỏi 2"]}
+    body = await request.json()
+    instances = body.get("instances", [])
+    results = []
+    
+    for text in instances:
+        inputs = tokenizer(text, return_tensors="pt").to(device)
+        with torch.no_grad():
+            outputs = model.generate(**inputs, max_new_tokens=30)
+            response_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+        results.append(response_text)
+        
+    # Vertex AI yêu cầu phản hồi dạng {"predictions": [kết quả 1, kết quả 2]}
+    return {"predictions": results}</code></pre>
+            </div>
+
+            <div class="step-heading"><i class="fa-solid fa-circle-play"></i> Bước 3.2: Viết Dockerfile tối ưu dung lượng (Mỏng Nhẹ)</div>
+            <p>Sử dụng base image <code>python:3.10-slim</code> và cài đặt PyTorch phiên bản CPU để dung lượng Docker Image đạt mức siêu nhỏ (~1.1GB), giúp giảm chi phí lưu trữ trên Artifact Registry:</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">dockerfile</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>FROM python:3.10-slim
+
+WORKDIR /workspace
+COPY ./app /workspace/app
+
+# Cài đặt PyTorch CPU-only từ source wheel chính thức để giữ dung lượng image siêu nhỏ gọn
+RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
+    torch torchvision torchaudio \
+    && pip install --no-cache-dir fastapi uvicorn transformers huggingface_hub
+
+# Cổng 8080 là cổng mặc định phục vụ của Vertex AI
+EXPOSE 8080
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]</code></pre>
+            </div>
+
+            <div class="step-heading"><i class="fa-solid fa-circle-play"></i> Bước 3.3: Đóng gói và đẩy Container Image lên Google Artifact Registry (GAR)</div>
+            <p>Biên dịch Docker image cục bộ và đẩy lên kho lưu trữ bảo mật của Google Cloud:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">bash</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code># 1. Tạo Docker Repository trên GCP (nếu chưa có)
+gcloud artifacts repositories create custom-models-repo \
+    --repository-format=docker --location=us-central1 --description="Repository chứa mô hình CPU"
+
+# 2. Xác thực Docker daemon với Google Artifact Registry
+gcloud auth configure-docker us-central1-docker.pkg.dev
+
+# 3. Build Docker image siêu nhẹ
+docker build -t custom-cpu-predictor:v1 .
+
+# 4. Gán nhãn trỏ về Artifact Registry của dự án
+docker tag custom-cpu-predictor:v1 us-central1-docker.pkg.dev/[PROJECT_ID_CỦA_BẠN]/custom-models-repo/my-cpu-predictor:v1
+
+# 5. Đẩy image lên cloud
+docker push us-central1-docker.pkg.dev/[PROJECT_ID_CỦA_BẠN]/custom-models-repo/my-cpu-predictor:v1</code></pre>
+            </div>
+
+            <div class="step-heading"><i class="fa-solid fa-circle-play"></i> Bước 3.4: Đăng ký & Triển khai lên Endpoint CPU thật</div>
+            <p>Đẩy weights mô hình tinh chỉnh lên GCS Bucket, đăng ký custom container và deploy lên Endpoint máy ảo CPU rẻ nhất:</p>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">python</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code># 1. Tải weights mô hình lên GCS Bucket (Chạy ở Terminal):
+# gcloud storage cp -r ./notebook/Qwen2.5-0.5B-Instruct-lora-finetuned gs://[BUCKET_NAME]/models
+
+# 2. Tập lệnh Python đăng ký Custom Model & Deploy lên Vertex CPU Endpoint:
+import os
+from google.cloud import aiplatform
+
+aiplatform.init(
+    project=os.environ.get("GCP_PROJECT_ID", "ticmastery-project"),
+    location=os.environ.get("GCP_REGION", "us-central1")
+)
+
+# Đăng ký mô hình tùy biến liên kết với đường dẫn weights trên GCS
+model = aiplatform.Model.upload(
+    display_name="qwen-custom-cpu-model",
+    # Đường dẫn thư mục weights trên GCS (sẽ được tự động mount vào /gcs/)
+    artifact_uri="gs://[BUCKET_NAME]/models",
+    serving_container_image_uri="us-central1-docker.pkg.dev/[PROJECT_ID_CỦA_BẠN]/custom-models-repo/my-cpu-predictor:v1",
+    serving_container_ports=[8080]
+)
+
+print("👉 Đang tạo endpoint...")
+endpoint = aiplatform.Endpoint.create(display_name="custom-cpu-endpoint")
+
+# Deploy lên máy ảo CPU giá rẻ n1-standard-2 để tiết kiệm chi phí cực hạn
+print("🚀 Đang tiến hành deploy custom container (khoảng 5-10 phút)...")
+model.deploy(
+    endpoint=endpoint,
+    machine_type="n1-standard-2", # Chỉ tốn khoảng $0.09/giờ!
+    min_replica_count=1,
+    max_replica_count=1
+)
+print(f"✅ Đã deploy thành công! Endpoint ID: {endpoint.resource_name}")</code></pre>
+            </div>
+        </section>
+
+        <!-- SECTION 4: Verification & Cleanup -->
+        <section id="cleanup">
+            <h2 class="section-title"><i class="fa-solid fa-trash-can"></i> 4. Kiểm Thử Endpoint & Hủy Tài Nguyên (Dọn Dẹp)</h2>
+            <p>Sau khi deploy thành công, hãy thực hiện kiểm thử nhanh dữ liệu dự đoán và thực hiện **quy trình dọn dẹp bắt buộc** ngay lập tức để tránh phát sinh chi phí duy trì máy ảo ngầm ngoài ý muốn.</p>
+
+            <div class="step-heading"><i class="fa-solid fa-circle-play"></i> Bước 4.1: Kiểm thử gửi yêu cầu suy luận (Inference)</div>
+            <p>Sử dụng Python SDK để gọi API suy luận thông qua Endpoint Gateway bảo mật của Google:</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">python</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>from google.cloud import aiplatform
+
+# Cấu hình ID endpoint vừa tạo của bạn
+ENDPOINT_ID = "projects/[PROJECT_ID]/locations/us-central1/endpoints/[ENDPOINT_NUMERIC_ID]"
+
+endpoint = aiplatform.Endpoint(endpoint_name=ENDPOINT_ID)
+
+# Gửi yêu cầu suy luận theo định dạng instances chuẩn
+response = endpoint.predict(
+    instances=["What is the capital of Vietnam?"]
+)
+
+print("👉 Kết quả dự đoán từ Vertex AI CPU Endpoint:")
+print(response.predictions)</code></pre>
+            </div>
+
+            <div class="step-heading" style="color: var(--color-rose);"><i class="fa-solid fa-triangle-exclamation"></i> Bước 4.2: Dọn dẹp triệt để tránh bị tính phí ngầm (QUAN TRỌNG NHẤT)</div>
+            <p>Mô hình đăng ký trên Registry thì không tốn tiền duy trì, nhưng máy ảo liên kết với Endpoint thì tính tiền theo giờ. Hãy chạy đoạn script Python dọn dẹp tự động này ngay sau khi test xong:</p>
+            
+            <div class="code-container">
+                <div class="code-header">
+                    <span class="code-lang">python</span>
+                    <button class="copy-btn"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+                <pre><code>from google.cloud import aiplatform
+
+# Khởi tạo kết nối tới Endpoint của bạn
+ENDPOINT_ID = "projects/[PROJECT_ID]/locations/us-central1/endpoints/[ENDPOINT_NUMERIC_ID]"
+endpoint = aiplatform.Endpoint(endpoint_name=ENDPOINT_ID)
+
+print("⚠️ Đang tiến hành hủy deploy tất cả các mô hình khỏi máy ảo...")
+# 1. Hủy deploy mô hình để tắt VM Instance bên dưới Endpoint
+endpoint.undeploy_all()
+
+print("🧹 Đang xóa Endpoint...")
+# 2. Xóa Endpoint để giải phóng tài nguyên mạng hoàn toàn
+endpoint.delete()
+
+print("✅ Đã dọn dẹp sạch sẽ! Hệ thống của bạn hiện tại an toàn 100% không lo phát sinh hóa đơn phát sinh.")</code></pre>
+            </div>
+        </section>
+
+        <!-- Footer Ghi chú Copyright -->
+        <footer>
+            <div>R&D Project developed by <a href="https://github.com/HalogenFlo" target="_blank">HalogenFlo</a></div>
+            <div style="font-size: 0.8rem; opacity: 0.7;">Tài liệu hướng dẫn thực hành MLOps Step 12 - Dự án làm chủ mô hình Hugging Face. © 2026. All rights reserved.</div>
+        </footer>
+    </main>
+
+    <!-- JavaScript xử lý Copy Code và Sync Sidebar Menu active -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Logic xử lý Copy Code
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            
+            copyButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    const codeContainer = button.closest('.code-container');
+                    const codeElement = codeContainer.querySelector('code');
+                    const textToCopy = codeElement.innerText;
+                    
+                    try {
+                        await navigator.clipboard.writeText(textToCopy);
+                        
+                        button.classList.add('copied');
+                        button.innerHTML = '<i class="fa-solid fa-circle-check"></i> Copied!';
+                        
+                        setTimeout(() => {
+                            button.classList.remove('copied');
+                            button.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Không thể copy code: ', err);
+                        button.innerHTML = '❌ Lỗi!';
+                    }
+                });
+            });
+
+            // Logic theo dõi scroll để active sidebar menu
+            const sections = document.querySelectorAll('section, header');
+            const navLi = document.querySelectorAll('aside .nav-links li');
+            
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= (sectionTop - 150)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLi.forEach(li => {
+                    li.classList.remove('active');
+                    const aHref = li.querySelector('a').getAttribute('href');
+                    if (aHref === `#${current}`) {
+                        li.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
