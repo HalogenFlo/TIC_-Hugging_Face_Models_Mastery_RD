@@ -1,0 +1,1760 @@
+<!--
+Chức năng: Báo cáo tiến độ dự án làm chủ mô hình Hugging Face (TIC Project Progress Report - Hugging Face Mastery)
+Lý do tạo: Chuyển đổi báo cáo tiến độ dạng Markdown (PROGRESS_REPORT.md) sang định dạng HTML tương tác cao cấp, hỗ trợ song ngữ Anh-Việt để người dùng dễ dàng theo dõi và đối chiếu số liệu một cách chính xác.
+Nguồn trích dẫn: c:\Users\Admin\Desktop\TIC_Project\report\PROGRESS_REPORT.md
+-->
+<!DOCTYPE html>
+<html lang="vi" class="lang-vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIC Project Progress Report - Hugging Face Mastery</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Design System Tokens - Premium Dark Mode */
+            --bg-primary: #080c14;
+            --bg-secondary: #0f1626;
+            --bg-glass: rgba(15, 22, 38, 0.7);
+            --bg-glass-hover: rgba(22, 31, 54, 0.8);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(0, 242, 254, 0.3);
+            
+            /* HSL Tailored Colors */
+            --primary: #00f2fe;
+            --primary-glow: rgba(0, 242, 254, 0.15);
+            --secondary: #4facfe;
+            --accent: #8a2be2;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            
+            /* Status Colors */
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.15);
+            --info: #3b82f6;
+            --info-glow: rgba(59, 130, 246, 0.15);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.15);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.15);
+            
+            --sidebar-width: 320px;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Basic Resets & Scrollbar */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Multilingual Visibility Control */
+        html.lang-vi [lang="en"] { display: none !important; }
+        html.lang-en [lang="vi"] { display: none !important; }
+        
+        /* Specific displays for inline and table elements */
+        html.lang-vi span[lang="vi"], html.lang-vi strong[lang="vi"], html.lang-vi a[lang="vi"], html.lang-vi code[lang="vi"] { display: inline !important; }
+        html.lang-en span[lang="en"], html.lang-en strong[lang="en"], html.lang-en a[lang="en"], html.lang-en code[lang="en"] { display: inline !important; }
+        html.lang-vi tr[lang="vi"] { display: table-row !important; }
+        html.lang-en tr[lang="en"] { display: table-row !important; }
+
+        /* Sidebar Navigation (TOC) */
+        aside {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-area i {
+            -webkit-text-fill-color: initial;
+            color: var(--primary);
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 8px var(--primary-glow));
+        }
+
+        .toc-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toc-item a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }
+
+        .toc-item a:hover {
+            color: var(--primary);
+            background: rgba(0, 242, 254, 0.05);
+            border-color: rgba(0, 242, 254, 0.1);
+            transform: translateX(5px);
+        }
+
+        .toc-item.active a {
+            color: var(--bg-primary);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0, 242, 254, 0.3);
+        }
+
+        /* Main Content Container */
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 3rem 4rem;
+            max-width: 1200px;
+            position: relative;
+        }
+
+        /* Header & Lang Switcher */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-title h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        /* Language Switcher Button (Premium Glassmorphism Style) */
+        .lang-switcher {
+            display: flex;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 4px;
+            border-radius: 30px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lang-btn.active {
+            color: var(--bg-primary);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            box-shadow: 0 2px 10px rgba(0, 242, 254, 0.3);
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            transition: var(--transition-smooth);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 15px 35px rgba(0, 242, 254, 0.05);
+            background: var(--bg-glass-hover);
+        }
+
+        /* Section Headings */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.25rem;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        h2.section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        h3.subsection-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 1.5rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--success-glow);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            animation: pulse-success 2s infinite;
+        }
+
+        @keyframes pulse-success {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* General Typography inside Main */
+        p {
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 0.75rem;
+            font-size: 1.05rem;
+        }
+
+        li::marker {
+            color: var(--primary);
+        }
+
+        /* Premium Custom Tables */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            margin: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: rgba(15, 22, 38, 0.9);
+            color: #ffffff;
+            font-weight: 700;
+            padding: 1rem 1.25rem;
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-muted);
+            transition: var(--transition-smooth);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+            color: #ffffff;
+        }
+
+        /* Callout Alerts (GitHub-style customized) */
+        .callout {
+            border-left: 4px solid;
+            padding: 1.25rem 1.5rem;
+            border-radius: 0 16px 16px 0;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .callout-icon {
+            font-size: 1.25rem;
+            margin-top: 2px;
+        }
+
+        .callout-content {
+            flex: 1;
+        }
+
+        .callout-content p {
+            margin-bottom: 0;
+            font-size: 0.95rem;
+        }
+
+        .callout.note {
+            border-color: var(--info);
+            background: var(--info-glow);
+        }
+        .callout.note .callout-icon { color: var(--info); }
+
+        .callout.tip {
+            border-color: var(--success);
+            background: var(--success-glow);
+        }
+        .callout.tip .callout-icon { color: var(--success); }
+
+        .callout.important {
+            border-color: var(--accent);
+            background: rgba(138, 43, 226, 0.1);
+        }
+        .callout.important .callout-icon { color: var(--accent); }
+
+        .callout.warning {
+            border-color: var(--warning);
+            background: var(--warning-glow);
+        }
+        .callout.warning .callout-icon { color: var(--warning); }
+
+        /* Code highlight formatting */
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: rgba(255, 255, 255, 0.06);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: var(--primary);
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition-smooth);
+            border-bottom: 1px dashed rgba(0, 242, 254, 0.3);
+        }
+
+        a:hover {
+            color: var(--secondary);
+            border-bottom-style: solid;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Floating Back to Top Button */
+        #back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: var(--bg-primary);
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+            z-index: 1000;
+        }
+
+        #back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.6);
+        }
+
+        /* Mobile Responsive adjustments */
+        @media (max-width: 1024px) {
+            aside {
+                transform: translateX(-100%);
+                transition: var(--transition-smooth);
+            }
+            aside.open {
+                transform: translateX(0);
+            }
+            main {
+                margin-left: 0;
+                padding: 2rem;
+            }
+            .menu-toggle {
+                display: flex !important;
+            }
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: #ffffff;
+            font-size: 1.25rem;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: var(--transition-smooth);
+        }
+
+        .menu-toggle:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .math-symbol {
+            font-family: 'JetBrains Mono', monospace;
+            font-style: italic;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menu Toggle Button for Mobile -->
+    <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Navigation Menu">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Navigation (TOC) -->
+    <aside id="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-brain"></i>
+            <span>TIC MASTEROPs</span>
+        </div>
+        
+        <ul class="toc-menu">
+            <li class="toc-item active" data-target="overview">
+                <a href="#overview">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span lang="vi">Tổng quan Báo cáo</span>
+                    <span lang="en">Report Overview</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-1">
+                <a href="#step-1">
+                    <i class="fa-solid fa-gears"></i>
+                    <span lang="vi">Bước 1: Môi trường & Thư viện</span>
+                    <span lang="en">Step 1: Env & Libraries</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-2">
+                <a href="#step-2">
+                    <i class="fa-solid fa-robot"></i>
+                    <span lang="vi">Bước 2: Quy trình Machine Learning</span>
+                    <span lang="en">Step 2: ML standard Pipeline</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-3">
+                <a href="#step-3">
+                    <i class="fa-solid fa-eye"></i>
+                    <span lang="vi">Bước 3: Quy trình Deep Learning</span>
+                    <span lang="en">Step 3: DL standard Pipeline</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-4">
+                <a href="#step-4">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span lang="vi">Bước 4: Vòng lặp 4 bước Core</span>
+                    <span lang="en">Step 4: Core 4-Step Loop</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-5">
+                <a href="#step-5">
+                    <i class="fa-solid fa-comments"></i>
+                    <span lang="vi">Bước 5: Huấn luyện LLM</span>
+                    <span lang="en">Step 5: LLM standard Workflow</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-6">
+                <a href="#step-6">
+                    <i class="fa-solid fa-compress"></i>
+                    <span lang="vi">Bước 6: Tinh chỉnh LoRA</span>
+                    <span lang="en">Step 6: LoRA Fine-tuning</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-7">
+                <a href="#step-7">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span lang="vi">Bước 7: Tinh chỉnh QLoRA</span>
+                    <span lang="en">Step 7: QLoRA Fine-tuning</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-8">
+                <a href="#step-8">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span lang="vi">Bước 8: Quản lý Hub & Data</span>
+                    <span lang="en">Step 8: Hub & Dataset Mgmt</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-9">
+                <a href="#step-9">
+                    <i class="fa-solid fa-laptop-code"></i>
+                    <span lang="vi">Bước 9: Demo Spaces tương tác</span>
+                    <span lang="en">Step 9: Spaces Demos</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-10">
+                <a href="#step-10">
+                    <i class="fa-solid fa-magnifying-glass-chart"></i>
+                    <span lang="vi">Bước 10: Nghiên cứu Frontier LLM</span>
+                    <span lang="en">Step 10: Frontier LLM Research</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-11">
+                <a href="#step-11">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    <span lang="vi">Bước 11: Lựa chọn LLM Thương mại</span>
+                    <span lang="en">Step 11: Commercial Strategy</span>
+                </a>
+            </li>
+            <li class="toc-item" data-target="step-12">
+                <a href="#step-12">
+                    <i class="fa-solid fa-server"></i>
+                    <span lang="vi">Bước 12: Triển khai Vertex AI</span>
+                    <span lang="en">Step 12: Vertex AI Deployment</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Header -->
+        <header>
+            <div class="header-title">
+                <h1 lang="vi">Báo cáo Tiến độ Dự án TIC</h1>
+                <h1 lang="en">TIC Project Progress Report</h1>
+                <p lang="vi">Lộ trình làm chủ mô hình Hugging Face & Triển khai Production</p>
+                <p lang="en">Hugging Face Models Mastery & Production Deployment Roadmap</p>
+            </div>
+            
+            <!-- Lang Switcher -->
+            <div class="lang-switcher">
+                <button class="lang-btn active" id="btn-vi" onclick="switchLanguage('vi')">
+                    <img src="https://flagcdn.com/w20/vn.png" alt="VN Flag" style="width: 16px; border-radius:2px;"> VI
+                </button>
+                <button class="lang-btn" id="btn-en" onclick="switchLanguage('en')">
+                    <img src="https://flagcdn.com/w20/us.png" alt="US Flag" style="width: 16px; border-radius:2px;"> EN
+                </button>
+            </div>
+        </header>
+
+        <!-- OVERVIEW CARD -->
+        <section id="overview" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-square-poll-vertical"></i></div>
+                <h2 class="section-title" lang="vi">Tổng quan Tiến độ Lộ trình</h2>
+                <h2 class="section-title" lang="en">Roadmap Progress Overview</h2>
+            </div>
+            
+            <div class="status-badge">
+                <i class="fa-solid fa-circle-check"></i>
+                <span lang="vi">Tất cả 12 bước - ĐÃ HOÀN THÀN</span>
+                <span lang="en">All 12 Steps - COMPLETED</span>
+            </div>
+
+            <p lang="vi">
+                Báo cáo này tài liệu hóa chi tiết toàn bộ lộ trình nghiên cứu, phát triển & triển khai MLOps từ những bước cơ bản về cài đặt thư viện cho đến việc làm chủ các kỹ thuật huấn luyện mô hình thị giác máy tính (ViT), xử lý ngôn ngữ tự nhiên (DeBERTa), các mô hình ngôn ngữ lớn (LLM) bằng kỹ thuật tối ưu hóa <strong>LoRA/QLoRA (Unsloth)</strong>, nghiên cứu các mô hình frontier (DeepSeek-R1/V3, Llama 3), thiết lập chiến lược lựa chọn mô hình thương mại đáp ứng các tiêu chuẩn pháp lý (Nghị định 13/ND-CP, GDPR) và cuối cùng là triển khai lên môi trường doanh nghiệp Cloud <strong>Google Vertex AI</strong>.
+            </p>
+            <p lang="en">
+                This report details the entire research, development & MLOps deployment roadmap, starting from fundamental library setups to mastering Computer Vision models (ViT), Natural Language Processing (DeBERTa), and Large Language Models (LLMs) using optimized <strong>LoRA/QLoRA (Unsloth)</strong>. It also covers researching frontier models (DeepSeek-R1/V3, Llama 3), defining commercial model selection strategies meeting strict regulatory compliance standards (Decree 13/ND-CP, GDPR), and finally deploying models to enterprise-grade <strong>Google Vertex AI</strong>.
+            </p>
+        </section>
+
+        <!-- STEP 1 CARD -->
+        <section id="step-1" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-gears"></i></div>
+                <h2 class="section-title" lang="vi">Bước 1: Thiết lập Môi trường & Hệ sinh thái Hugging Face</h2>
+                <h2 class="section-title" lang="en">Step 1: Hugging Face Ecosystem & Environment Setup</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 1 - COMPLETED</div>
+            
+            <ul lang="vi">
+                <li><strong>Thiết lập Môi trường:</strong> Khởi tạo môi trường ảo Python venv ổn định và cấu hình các biến môi trường bảo mật.</li>
+                <li><strong>Cài đặt Thư viện:</strong> Cài đặt thành công bộ công cụ SOTA dành cho Deep Learning và LLMs (Transformers, Unsloth, PEFT, TRL,...).</li>
+                <li><strong>Hệ thống hóa Kiến thức:</strong> Nắm vững vai trò cốt lõi của các thư viện Tokenization và cơ chế Serialization.</li>
+                <li><strong>Cột mốc Suy luận Cơ bản:</strong> Xác thực môi trường thành công bằng cách chạy suy luận ổn định trên mô hình GPT-2 được host trên Hub.</li>
+            </ul>
+
+            <ul lang="en">
+                <li><strong>Environment Setup:</strong> Initialized Python venv and configured secure environment variables.</li>
+                <li><strong>Library Installation:</strong> Completed installation of the SOTA toolkit for LLMs (Transformers, Unsloth, PEFT, TRL, etc.).</li>
+                <li><strong>Knowledge Systematization:</strong> Understood the roles of Tokenization libraries and Serialization.</li>
+                <li><strong>Basic Inference Milestone:</strong> Verified environment by running successful inference on a Hub-hosted model (GPT-2).</li>
+            </ul>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-book"></i> Danh sách Thư viện & Lý do Lựa chọn</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-book"></i> Installed Libraries & Technical Rationale</h3>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th lang="vi">Thư viện</th>
+                            <th lang="en">Library</th>
+                            <th lang="vi">Vai trò / Lý do cài đặt</th>
+                            <th lang="en">Role / Reason for Installation</th>
+                            <th lang="vi">Tầm quan trọng đối với dự án</th>
+                            <th lang="en">Importance for the Project</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>transformers</code></td>
+                            <td><code>transformers</code></td>
+                            <td lang="vi">Thư viện cốt lõi của Hugging Face để tải và chạy các mô hình (BERT, Llama, Qwen...).</td>
+                            <td lang="en">Core Hugging Face library to load and run models (BERT, Llama, Qwen...).</td>
+                            <td lang="vi">Chứa các kiến trúc pre-trained tối ưu, làm nền tảng fine-tune tập dữ liệu riêng.</td>
+                            <td lang="en">Contains optimized pre-trained architectures, which can be used for fine-tuning on custom datasets.</td>
+                        </tr>
+                        <tr>
+                            <td><code>datasets</code></td>
+                            <td><code>datasets</code></td>
+                            <td lang="vi">Quản lý, tải về và tiền xử lý dữ liệu huấn luyện quy mô lớn.</td>
+                            <td lang="en">Manages, downloads, and pre-processes large-scale training data.</td>
+                            <td lang="vi">Hỗ trợ xử lý dữ liệu lớn một cách hiệu quả, tối ưu hóa RAM.</td>
+                            <td lang="en">Supports efficient processing of large datasets.</td>
+                        </tr>
+                        <tr>
+                            <td><code>tokenizers</code></td>
+                            <td><code>tokenizers</code></td>
+                            <td lang="vi">Thư viện phân tích từ vựng (tokenizer) hiệu năng cực cao viết bằng Rust.</td>
+                            <td lang="en">High-performance tokenizer written in Rust.</td>
+                            <td lang="vi">Xử lý văn bản, tách từ, tách âm tiết với tốc độ cực nhanh.</td>
+                            <td lang="en">Processes text and syllables with extremely high speed.</td>
+                        </tr>
+                        <tr>
+                            <td><code>accelerate</code></td>
+                            <td><code>accelerate</code></td>
+                            <td lang="vi">Tối ưu hóa chạy huấn luyện trên GPU/TPU, hỗ trợ Distributed Training.</td>
+                            <td lang="en">Optimizes training on GPU/TPU and supports Distributed Training.</td>
+                            <td lang="vi">Cần thiết để huấn luyện các mô hình lớn mà không phải viết mã phân tán phức tạp.</td>
+                            <td lang="en">Essential for training large LLM models.</td>
+                        </tr>
+                        <tr>
+                            <td><code>peft</code></td>
+                            <td><code>peft</code></td>
+                            <td lang="vi">Hỗ trợ các kỹ thuật Tinh chỉnh Hiệu quả Tham số (LoRA, DoRA, Prefix Tuning).</td>
+                            <td lang="en">Supports efficient Fine-tuning techniques (LoRA, DoRA, Prefix Tuning).</td>
+                            <td lang="vi">Giúp giảm thiểu tối đa chi phí phần cứng khi doanh nghiệp cần customize mô hình.</td>
+                            <td lang="en">Helps reduce hardware costs when fine-tuning models for enterprises.</td>
+                        </tr>
+                        <tr>
+                            <td><code>bitsandbytes</code></td>
+                            <td><code>bitsandbytes</code></td>
+                            <td lang="vi">Hỗ trợ lượng tử hóa (Quantization 8-bit, 4-bit) để tiết kiệm bộ nhớ VRAM.</td>
+                            <td lang="en">Supports Quantization (8-bit, 4-bit) to reduce VRAM memory.</td>
+                            <td lang="vi">Cho phép chạy và huấn luyện LLM trên các dòng card GPU phổ thông (12GB-16GB).</td>
+                            <td lang="en">Allows running/training LLMs on consumer-grade GPUs (12GB-16GB).</td>
+                        </tr>
+                        <tr>
+                            <td><code>trl</code></td>
+                            <td><code>trl</code></td>
+                            <td lang="vi">Thư viện huấn luyện củng cố học sâu (SFT, DPO, PPO).</td>
+                            <td lang="en">Transformer Reinforcement Learning library (SFT, DPO, PPO).</td>
+                            <td lang="vi">Dùng để alignment (căn chỉnh) mô hình theo phản hồi con người.</td>
+                            <td lang="en">Used for alignment and fine-tuning LLMs using reinforcement learning techniques.</td>
+                        </tr>
+                        <tr>
+                            <td><code>unsloth</code></td>
+                            <td><code>unsloth</code></td>
+                            <td lang="vi">Công cụ tối ưu hóa huấn luyện LLM nhanh hơn 2-5 lần và tiết kiệm 70% VRAM.</td>
+                            <td lang="en">Tool to optimize LLM training to be 2-5x faster and save 70% VRAM.</td>
+                            <td lang="vi"><strong>Vũ khí SOTA</strong> chính của dự án giúp đạt hiệu suất huấn luyện tối đa.</td>
+                            <td lang="en"><strong>Key SOTA</strong> of the project to achieve the highest performance.</td>
+                        </tr>
+                        <tr>
+                            <td><code>google-cloud-aiplatform</code></td>
+                            <td><code>google-cloud-aiplatform</code></td>
+                            <td lang="vi">Bộ SDK tương tác với nền tảng Google Vertex AI.</td>
+                            <td lang="en">SDK to interact with Google Vertex AI.</td>
+                            <td lang="vi">Phục vụ cho việc deploy mô hình lên môi trường Production (Bước 12).</td>
+                            <td lang="en">Serves for deploying models to Production environment (Step 12).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- STEP 2 CARD -->
+        <section id="step-2" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-robot"></i></div>
+                <h2 class="section-title" lang="vi">Bước 2: Quy trình Chuẩn hóa Machine Learning</h2>
+                <h2 class="section-title" lang="en">Step 2: Machine Learning Standard Workflow</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 2 - COMPLETED</div>
+            
+            <p lang="vi">
+                Triển khai pipeline ML chuẩn bao gồm: định nghĩa bài toán, tiền xử lý tokenizer, lựa chọn mô hình pre-trained, fine-tuning, đánh giá (Accuracy, F1), đẩy mô hình lên Hugging Face Hub kèm Model Card chuyên nghiệp.
+            </p>
+            <p lang="en">
+                Implemented a standard ML pipeline: problem and data definition, tokenization & data preprocessing, pre-trained model selection, fine-tuning, metric evaluation (Accuracy, F1), and pushing to the Hub with a detailed Model Card.
+            </p>
+
+            <ul lang="vi">
+                <li><strong>Tập dữ liệu lựa chọn:</strong> <code>dair-ai/emotion</code> (Nhận diện cảm xúc với 6 nhãn).</li>
+                <li><strong>Mô hình xương sống:</strong> <code>microsoft/deberta-v3-base</code>.</li>
+                <li><strong>Mô hình đã đẩy lên Hub:</strong> <a href="https://huggingface.co/HalogenFlo/microsoft-deberta-v3-base-emotion-recognition" target="_blank">HalogenFlo/microsoft-deberta-v3-base-emotion-recognition</a></li>
+            </ul>
+            <ul lang="en">
+                <li><strong>Dataset Selected:</strong> <code>dair-ai/emotion</code> (Emotion Recognition with 6 labels).</li>
+                <li><strong>Backbone Model:</strong> <code>microsoft/deberta-v3-base</code>.</li>
+                <li><strong>Hub Pushed Model:</strong> <a href="https://huggingface.co/HalogenFlo/microsoft-deberta-v3-base-emotion-recognition" target="_blank">HalogenFlo/microsoft-deberta-v3-base-emotion-recognition</a></li>
+            </ul>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-square-poll-vertical"></i> Kết quả Đánh giá Hiệu năng (DeBERTa-v3)</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-square-poll-vertical"></i> Performance Metrics (DeBERTa-v3)</h3>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Epoch</th>
+                            <th lang="vi">Training Loss</th>
+                            <th lang="en">Training Loss</th>
+                            <th lang="vi">Validation Loss</th>
+                            <th lang="en">Validation Loss</th>
+                            <th lang="vi">Độ chính xác (Accuracy)</th>
+                            <th lang="en">Accuracy</th>
+                            <th>F1 Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>0.4726</td>
+                            <td>0.4306</td>
+                            <td>85.85%</td>
+                            <td>0.8298</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>0.2370</td>
+                            <td>0.2472</td>
+                            <td>92.70%</td>
+                            <td>0.9024</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>0.2206</td>
+                            <td>0.1694</td>
+                            <td>93.65%</td>
+                            <td>0.9126</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>0.4768</td>
+                            <td>0.2855</td>
+                            <td>93.85%</td>
+                            <td><strong>0.9169</strong></td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>0.0221</td>
+                            <td>0.5045</td>
+                            <td><strong>93.95%</strong></td>
+                            <td>0.9159</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout tip">
+                <div class="callout-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                <div class="callout-content">
+                    <p lang="vi">
+                        <strong>Phân tích hội tụ:</strong> Mô hình đạt Accuracy tốt nhất ở Epoch 10 (93.95%), tuy nhiên F1-score tốt nhất và Validation Loss ổn định nhất nằm ở Epoch 6, cho thấy mô hình hội tụ rất nhanh và tránh overfit ở các epoch sau.
+                    </p>
+                    <p lang="en">
+                        <strong>Convergence Analysis:</strong> The model achieves the highest accuracy at Epoch 10 (93.95%). However, the best F1-score and most stable Validation Loss are reached around Epoch 6, showing fast convergence and avoiding overfitting.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3 CARD -->
+        <section id="step-3" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-eye"></i></div>
+                <h2 class="section-title" lang="vi">Bước 3: Quy trình Chuẩn hóa Deep Learning (Computer Vision)</h2>
+                <h2 class="section-title" lang="en">Step 3: Deep Learning Standard Workflow</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 3 - COMPLETED</div>
+            
+            <p lang="vi">
+                Chuyển dịch từ việc trích xuất đặc trưng thủ công (ML) sang trích xuất tự động bằng mạng nơ-ron sâu. Thực hiện tinh chỉnh Vision Transformer (ViT) trên tập dữ liệu ảnh viết tay EMNIST.
+            </p>
+            <p lang="en">
+                Transitioned from manual feature engineering to automatic feature extraction using deep neural architectures. Fine-tuned a Vision Transformer (ViT) on the EMNIST handwritten dataset.
+            </p>
+
+            <ul lang="vi">
+                <li><strong>Mô hình lựa chọn:</strong> <code>google/vit-base-patch16-224-in21k</code>.</li>
+                <li><strong>Tập dữ liệu:</strong> EMNIST (ByClass - 62 classes, ~814,255 samples).</li>
+                <li><strong>Cải tiến kỹ thuật:</strong> Xử lý ảnh grayscale (1 kênh) sang RGB (3 kênh), resize 224x224 thông qua <code>AutoImageProcessor</code>, áp dụng Class Weighting cho <code>CrossEntropyLoss</code> nhằm giải quyết sự mất cân bằng dữ liệu của EMNIST.</li>
+                <li><strong>Độ chính xác đạt được:</strong> <strong>~85%</strong> (Đáp ứng hoàn hảo yêu cầu nhận dạng chữ viết tay).</li>
+                <li><strong>Mô hình trên Hub:</strong> <a href="https://huggingface.co/HalogenFlo/vit-emnist-byclass" target="_blank">HalogenFlo/vit-emnist-byclass</a></li>
+            </ul>
+
+            <ul lang="en">
+                <li><strong>Model Selected:</strong> <code>google/vit-base-patch16-224-in21k</code>.</li>
+                <li><strong>Dataset:</strong> EMNIST (ByClass split - 62 classes, ~814,255 samples).</li>
+                <li><strong>Technical Adaptation:</strong> Converting 1-channel grayscale images to 3-channel RGB, resizing to 224x224 using <code>AutoImageProcessor</code>, and implementing Class Weighting in <code>CrossEntropyLoss</code> to handle massive class imbalance.</li>
+                <li><strong>Accuracy Achieved:</strong> <strong>~85%</strong> (Target achieved for handwriting recognition).</li>
+                <li><strong>Model Link:</strong> <a href="https://huggingface.co/HalogenFlo/vit-emnist-byclass" target="_blank">HalogenFlo/vit-emnist-byclass</a></li>
+            </ul>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-code-compare"></i> So sánh Kỹ thuật: Quy trình ML vs DL</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-code-compare"></i> Technical Comparison: ML vs DL Pipeline</h3>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th lang="vi">Các bước trong Quy trình</th>
+                            <th lang="en">Pipeline Step</th>
+                            <th lang="vi">Machine Learning (ML)</th>
+                            <th lang="en">Machine Learning (ML)</th>
+                            <th lang="vi">Deep Learning (DL)</th>
+                            <th lang="en">Deep Learning (DL)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td lang="vi">Trích xuất Đặc trưng</td>
+                            <td lang="en">Feature Extraction</td>
+                            <td lang="vi"><strong>Thủ công:</strong> Cần chuyên gia thiết kế thuộc tính (HOG, SIFT, TF-IDF).</td>
+                            <td lang="en"><strong>Manual:</strong> Requires domain expertise to select features.</td>
+                            <td lang="vi"><strong>Tự động:</strong> Các lớp ẩn tự trích xuất đặc trưng trực tiếp từ raw data.</td>
+                            <td lang="en"><strong>Automatic:</strong> Layers learn features directly from raw data.</td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">Yêu cầu dữ liệu</td>
+                            <td lang="en">Data Requirements</td>
+                            <td lang="vi">Hoạt động tốt với tập dữ liệu dạng bảng có cấu trúc nhỏ và vừa.</td>
+                            <td lang="en">Works well with smaller, structured datasets.</td>
+                            <td lang="vi">Đòi hỏi lượng dữ liệu phi cấu trúc lớn (Ảnh, Text, Video).</td>
+                            <td lang="en">Requires large-scale unstructured data (Images, Text).</td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">Phần cứng tối ưu</td>
+                            <td lang="en">Hardware</td>
+                            <td lang="vi">Tối ưu hóa chạy trên <strong>CPU</strong>.</td>
+                            <td lang="en">Optimized for <strong>CPU</strong> execution.</td>
+                            <td lang="vi">Phụ thuộc mạnh mẽ vào <strong>GPU/TPU</strong> để xử lý song song.</td>
+                            <td lang="en">Heavily dependent on <strong>GPU/TPU</strong> (Parallel Processing).</td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">Khả năng giải thích</td>
+                            <td lang="en">Interpretability</td>
+                            <td lang="vi">Cao (e.g., Cây quyết định, Trọng số tuyến tính).</td>
+                            <td lang="en">High (e.g., Decision Trees, Coefficients).</td>
+                            <td lang="vi">Thấp (Được coi là "Hộp đen" toán học).</td>
+                            <td lang="en">Low ("Black Box" nature of deep neural networks).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- STEP 4 CARD -->
+        <section id="step-4" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-rotate"></i></div>
+                <h2 class="section-title" lang="vi">Bước 4: Vòng lặp Huấn luyện 4 bước Cốt lõi (PyTorch)</h2>
+                <h2 class="section-title" lang="en">Step 4: Core 4-Step Training Loop</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 4 - COMPLETED</div>
+            
+            <p lang="vi">
+                Để không phụ thuộc vào các thư viện trừu tượng hóa mức cao, chúng tôi tự thiết kế cấu trúc mạng <code>TransformerClassifier</code> (PyTorch) và tự tay xây dựng vòng lặp huấn luyện 4 bước cơ bản: Forward, Loss, Backward, và Update Weights (Optimizer).
+            </p>
+            <p lang="en">
+                To move beyond high-level library abstractions, we implemented a custom PyTorch <code>TransformerClassifier</code> from scratch and manually coded the core 4-step training loop: Forward, Loss computation, Backward (Autograd), and Optimization.
+            </p>
+
+            <ul lang="vi">
+                <li><strong>Cơ chế toán học được kiểm soát:</strong> Forward pass (Attention, Feed-Forward), Loss (CrossEntropyLoss), Backward (Autograd gradients), và Weight updates (AdamW).</li>
+                <li><strong>Tập dữ liệu thử nghiệm:</strong> <code>stanfordnlp/imdb</code> (25,000 train, 25,000 test).</li>
+            </ul>
+            <ul lang="en">
+                <li><strong>Mathematical Steps Covered:</strong> Forward pass (Attention & Feed-Forward routing), Loss calculation (CrossEntropy), Backward pass (Autograd gradient calculation), and Weight Update (AdamW).</li>
+                <li><strong>Dataset:</strong> <code>stanfordnlp/imdb</code> (25,000 train, 25,000 test).</li>
+            </ul>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-chart-simple"></i> So sánh Kết quả Giữa Các Phương Pháp Huấn Luyện (3 Epochs)</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-chart-simple"></i> Comparative Results (3 Epochs)</h3>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th lang="vi">Phương pháp</th>
+                            <th lang="en">Method</th>
+                            <th lang="vi">Độ chính xác (Accuracy - Epoch 3)</th>
+                            <th lang="en">Accuracy (Epoch 3)</th>
+                            <th lang="vi">Ưu điểm</th>
+                            <th lang="en">Pros</th>
+                            <th lang="vi">Nhược điểm</th>
+                            <th lang="en">Cons</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Manual Loop</strong></td>
+                            <td><strong>Manual Loop</strong></td>
+                            <td><strong>81.41%</strong></td>
+                            <td><strong>81.41%</strong></td>
+                            <td lang="vi">Kiểm soát tuyệt đối mọi tensor, dễ debug sâu logic backward.</td>
+                            <td lang="en">Full control over every step, easy to debug core logic.</td>
+                            <td lang="vi">Viết nhiều code dư thừa, khó mở rộng lên Multi-GPU.</td>
+                            <td lang="en">Verbose code, difficult to scale to Multi-GPU.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Accelerate</strong></td>
+                            <td><strong>Accelerate</strong></td>
+                            <td>80.85%</td>
+                            <td>80.85%</td>
+                            <td lang="vi">Sẵn sàng huấn luyện phân tán, quản lý thiết bị tự động.</td>
+                            <td lang="en">Ready for Distributed Training, automatic device management.</td>
+                            <td lang="vi">Cần cấu hình môi trường, phức tạp hơn manual loop một chút.</td>
+                            <td lang="en">Requires config setup, slightly more complex than manual.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Trainer API</strong></td>
+                            <td><strong>Trainer API</strong></td>
+                            <td>78.76%</td>
+                            <td>78.76%</td>
+                            <td lang="vi">Cực kỳ nhanh chóng, tích hợp sẵn Logging, Checkpoint, Eval.</td>
+                            <td lang="en">Convenient, built-in Evaluation, Logging, and Checkpointing.</td>
+                            <td lang="vi">Thiếu linh hoạt khi cần can thiệp thuật toán Loss/Backward tùy biến sâu.</td>
+                            <td lang="en">Less flexible for deep customization of Backward/Loss logic.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="callout note">
+                <div class="callout-icon"><i class="fa-solid fa-circle-info"></i></div>
+                <div class="callout-content">
+                    <p lang="vi">
+                        <strong>Kết luận bất ngờ:</strong> Việc viết loop huấn luyện thủ công (Manual Loop) đạt độ chính xác cao nhất (81.41%). Điều này chứng minh việc kiểm soát chi tiết dòng chảy dữ liệu và xử lý attention masking chuẩn xác cho các token padding mang lại giá trị tối ưu rất lớn.
+                    </p>
+                    <p lang="en">
+                        <strong>Key Insight:</strong> The Manual Training Loop achieved the highest accuracy (81.41%) in this experiment, proving that masterfully controlling sequence attention masking and backward propagation yields highly effective optimization.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 5 CARD -->
+        <section id="step-5" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-comments"></i></div>
+                <h2 class="section-title" lang="vi">Bước 5: Thiết lập Quy trình Huấn luyện LLM Standard</h2>
+                <h2 class="section-title" lang="en">Step 5: LLM Training Workflow</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 5 - COMPLETED</div>
+            
+            <p lang="vi">
+                Nghiên cứu kiến trúc Decoder-only, cơ chế Causal Language Modeling (CLM), kỹ thuật Instruction Tuning, cấu trúc Chat Templates (tokens đặc biệt: <code>&lt;|im_start|&gt;</code>, <code>&lt;|im_end|&gt;</code>) và cách tính toán Loss đặc thù (chỉ tính trên phản hồi của AI trợ lý, bỏ qua phần prompt đầu vào).
+            </p>
+            <p lang="en">
+                Studied Decoder-only architectures, Causal Language Modeling (CLM) mechanics, Instruction Tuning, Chat Templates (special tokens like <code>&lt;|im_start|&gt;</code>, <code>&lt;|im_end|&gt;</code>), and Assistant-only Loss Calculation.
+            </p>
+
+            <ul lang="vi">
+                <li><strong>Mô hình nền tảng:</strong> <code>Qwen/Qwen2.5-0.5B-Instruct</code>.</li>
+                <li><strong>Tập dữ liệu:</strong> <code>databricks/databricks-dolly-15k</code> (tập dữ liệu chỉ dẫn chất lượng cao).</li>
+                <li><strong>Giới hạn phần cứng:</strong> Một epoch huấn luyện toàn bộ tham số ước tính tốn khoảng <strong>15 giờ</strong> trên GPU đơn. Do đó, bước 5 tiến hành chạy mô phỏng 20 steps để xác nhận sự hội tụ ban đầu của Loss.</li>
+            </ul>
+            <ul lang="en">
+                <li><strong>Base Model:</strong> <code>Qwen/Qwen2.5-0.5B-Instruct</code>.</li>
+                <li><strong>Dataset:</strong> <code>databricks/databricks-dolly-15k</code>.</li>
+                <li><strong>Hardware Note:</strong> A full fine-tuning epoch would take approx <strong>15 hours</strong> on current hardware. Thus, training was limited to 20 simulation steps to verify the pipeline and initial loss convergence.</li>
+            </ul>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-chart-line"></i> Tiến trình Hội tụ Loss Mô phỏng (Step 5)</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-chart-line"></i> Loss Convergence Progression</h3>
+            
+            <div class="table-container" style="max-width: 500px; margin: 0 auto 2rem auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th lang="vi">Training Loss</th>
+                            <th lang="en">Training Loss</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>3.0234</td></tr>
+                        <tr><td>5</td><td>2.5320</td></tr>
+                        <tr><td>10</td><td>2.4109</td></tr>
+                        <tr><td>15</td><td>2.0012</td></tr>
+                        <tr><td>20</td><td><strong>2.2633</strong></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- STEP 6 CARD -->
+        <section id="step-6" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-compress"></i></div>
+                <h2 class="section-title" lang="vi">Bước 6: Tinh chỉnh Mô hình với LoRA</h2>
+                <h2 class="section-title" lang="en">Step 6: LoRA Fine-tuning</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 6 - COMPLETED</div>
+            
+            <p lang="vi">
+                LoRA (Low-Rank Adaptation) đóng băng trọng số gốc <span class="math-symbol">W₀</span> và biểu diễn sự thay đổi trọng số <span class="math-symbol">ΔW</span> dưới dạng tích hai ma trận hạng thấp <span class="math-symbol">A</span> và <span class="math-symbol">B</span>. Kỹ thuật này giúp giảm số lượng tham số cần huấn luyện hàng nghìn lần, tiết kiệm bộ nhớ VRAM tối đa.
+            </p>
+            <p lang="en">
+                LoRA (Low-Rank Adaptation) freezes the pre-trained weights <span class="math-symbol">W₀</span> and injects trainable rank decomposition matrices <span class="math-symbol">A</span> and <span class="math-symbol">B</span> to represent the weight update <span class="math-symbol">ΔW</span>. This reduces trainable parameters by thousands of times, saving massive VRAM.
+            </p>
+
+            <ul lang="vi">
+                <li><strong>Cấu hình LoRA:</strong> Rank <span class="math-symbol">r</span> = 16, Alpha <span class="math-symbol">α</span> = 16. Target modules: <code>q_proj</code>, <code>v_proj</code>.</li>
+                <li><strong>Tham số huấn luyện:</strong> Chỉ 1,081,344 tham số (chiếm <strong>0.22%</strong> tổng số tham số mô hình).</li>
+                <li><strong>Thư viện tăng tốc:</strong> <code>unsloth</code> kết hợp optimizer <code>adamw_8bit</code> và định dạng <code>bf16</code>.</li>
+                <li><strong>Mô hình lora adapter đã được đẩy lên Hub:</strong> <a href="https://huggingface.co/HalogenFlo/Qwen2.5-0.5B-Instruct-lora-finetuned" target="_blank">HalogenFlo/Qwen2.5-0.5B-Instruct-lora-finetuned</a></li>
+            </ul>
+
+            <ul lang="en">
+                <li><strong>LoRA Configuration:</strong> Rank <span class="math-symbol">r</span> = 16, Alpha <span class="math-symbol">α</span> = 16. Target modules: <code>q_proj</code>, <code>v_proj</code>.</li>
+                <li><strong>Trainable Parameters:</strong> 1,081,344 parameters (only <strong>0.22%</strong> of the total model size).</li>
+                <li><strong>Acceleration:</strong> <code>unsloth</code> with <code>adamw_8bit</code> and <code>bf16</code> precision.</li>
+                <li><strong>Pushed Adapter Link:</strong> <a href="https://huggingface.co/HalogenFlo/Qwen2.5-0.5B-Instruct-lora-finetuned" target="_blank">HalogenFlo/Qwen2.5-0.5B-Instruct-lora-finetuned</a></li>
+            </ul>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-list-check"></i> Vai trò của các Target Modules trong Transformer Attention</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-list-check"></i> Role of Target Modules in Transformer Attention</h3>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Module</th>
+                            <th lang="vi">Tên đầy đủ</th>
+                            <th lang="en">Full Name</th>
+                            <th lang="vi">Vai trò trong cơ chế Attention / MLP</th>
+                            <th lang="en">Role in Attention / MLP Mechanism</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>q_proj</code></td>
+                            <td>Query Projection</td>
+                            <td>Query Projection</td>
+                            <td lang="vi">Truy vấn thông tin cần tìm từ ngữ cảnh hiện tại.</td>
+                            <td lang="en">Queries information from the context.</td>
+                        </tr>
+                        <tr>
+                            <td><code>v_proj</code></td>
+                            <td>Value Projection</td>
+                            <td>Value Projection</td>
+                            <td lang="vi">Lưu trữ giá trị thông tin thực tế để tổng hợp kết quả.</td>
+                            <td lang="en">Stores the actual information values for aggregation.</td>
+                        </tr>
+                        <tr>
+                            <td><code>k_proj</code></td>
+                            <td>Key Projection</td>
+                            <td>Key Projection</td>
+                            <td lang="vi">Xác định các thành phần quan trọng trong dữ liệu đầu vào.</td>
+                            <td lang="en">Identifies important components in the input data.</td>
+                        </tr>
+                        <tr>
+                            <td><code>o_proj</code></td>
+                            <td>Output Projection</td>
+                            <td>Output Projection</td>
+                            <td lang="vi">Tổng hợp kết quả sau khi tính toán đa đầu Attention (Multi-head).</td>
+                            <td lang="en">Aggregates results from multiple Attention heads.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- STEP 7 CARD -->
+        <section id="step-7" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                <h2 class="section-title" lang="vi">Bước 7: Nghiên cứu Sâu & Thực thi QLoRA</h2>
+                <h2 class="section-title" lang="en">Step 7: QLoRA Fine-tuning</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 7 - COMPLETED</div>
+            
+            <p lang="vi">
+                QLoRA (Quantized LoRA) nâng cấp LoRA bằng cách lượng tử hóa trọng số base model xuống <strong>4-bit NF4 (NormalFloat4)</strong>, áp dụng <strong>Double Quantization</strong> để nén tối đa VRAM, và dùng <code>paged_adamw_8bit</code> để chống tràn bộ nhớ (OOM).
+            </p>
+            <p lang="en">
+                QLoRA (Quantized LoRA) optimizes LoRA by quantizing the base model weights to <strong>4-bit NF4 (NormalFloat4)</strong>, applying <strong>Double Quantization</strong>, and using <code>paged_adamw_8bit</code> optimizer to eliminate Out-Of-Memory (OOM) errors.
+            </p>
+
+            <div class="callout tip">
+                <div class="callout-icon"><i class="fa-solid fa-bolt"></i></div>
+                <div class="callout-content">
+                    <p lang="vi">
+                        <strong>Công nghệ SOTA - Packing Sequence:</strong> Chúng tôi áp dụng kỹ thuật <code>packing=True</code> trong <code>SFTTrainer</code>. Kỹ thuật này tự động ghép nhiều đoạn hội thoại ngắn thành một block có độ dài tối đa (2048) để triệt tiêu các token padding vô nghĩa. Nhờ đó, số bước huấn luyện giảm từ 5,631 xuống chỉ còn <strong>2,535 steps</strong> (giảm 55% thời gian chạy)!
+                    </p>
+                    <p lang="en">
+                        <strong>SOTA Innovation - Sequence Packing:</strong> By enabling <code>packing=True</code> in <code>SFTTrainer</code>, we packed multiple short sequences into single blocks of max length (2048) to eliminate padding. This slashed training from 5,631 steps to just <strong>2,535 steps</strong> (a 55% runtime reduction)!
+                    </p>
+                </div>
+            </div>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-code-branch"></i> Log Tiến trình Huấn luyện QLoRA (3 Epochs)</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-code-branch"></i> QLoRA Training Logs</h3>
+            <div class="table-container" style="max-width: 600px; margin: 0 auto 2rem auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Epoch</th>
+                            <th lang="vi">Training Loss</th>
+                            <th lang="en">Training Loss</th>
+                            <th lang="vi">Validation Loss</th>
+                            <th lang="en">Validation Loss</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>2.1782</td><td>2.1210</td></tr>
+                        <tr><td>2</td><td>1.9251</td><td><strong>2.1160 (Optimal)</strong></td></tr>
+                        <tr><td>3</td><td>1.7571</td><td>2.1507</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-table-list"></i> Bảng So sánh Tổng thể (Full Fine-tuning vs LoRA vs QLoRA)</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-table-list"></i> Comprehensive Benchmark Table</h3>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th lang="vi">Chỉ số so sánh</th>
+                            <th lang="en">Comparison Metric</th>
+                            <th lang="vi">Full FT (Step 5)</th>
+                            <th lang="en">Full FT (Step 5)</th>
+                            <th lang="vi">LoRA (Step 6)</th>
+                            <th lang="en">LoRA (Step 6)</th>
+                            <th lang="vi">QLoRA (Step 7)</th>
+                            <th lang="en">QLoRA (Step 7)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td lang="vi">Lượng tử hóa (Quantization)</td>
+                            <td lang="en">Quantization</td>
+                            <td>None (16-bit / BF16)</td>
+                            <td>None (16-bit / BF16)</td>
+                            <td>None (16-bit / BF16)</td>
+                            <td>None (16-bit / BF16)</td>
+                            <td><strong>4-bit NF4 + Double Quant</strong></td>
+                            <td><strong>4-bit NF4 + Double Quant</strong></td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">Tham số huấn luyện</td>
+                            <td lang="en">Trainable Params</td>
+                            <td>502,830,976 (100%)</td>
+                            <td>502,830,976 (100%)</td>
+                            <td>1,081,344 (0.22%)</td>
+                            <td>1,081,344 (0.22%)</td>
+                            <td><strong>8,798,208 (1.75%)</strong></td>
+                            <td><strong>8,798,208 (1.75%)</strong></td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">Bộ nhớ VRAM sử dụng</td>
+                            <td lang="en">Operating VRAM</td>
+                            <td lang="vi">Cực cao (>16GB - OOM)</td>
+                            <td lang="en">Extremely High (>16GB - OOM)</td>
+                            <td>Moderate (~8-10GB)</td>
+                            <td>Moderate (~8-10GB)</td>
+                            <td><strong>Tối ưu hóa (~5-6GB)</strong></td>
+                            <td><strong>Highly Optimized (~5-6GB)</strong></td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">Tổng thời gian (3 Epochs)</td>
+                            <td lang="en">Runtime (3 Epochs)</td>
+                            <td lang="vi">~15 giờ / 1 epoch (ước tính)</td>
+                            <td lang="en">~15 hours / 1 epoch (est)</td>
+                            <td>~3.5 hours</td>
+                            <td>~3.5 hours</td>
+                            <td><strong>~2.29 hours</strong> (RTX 3060)</td>
+                            <td><strong>~2.29 hours</strong> (RTX 3060)</td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">Loss huấn luyện cuối cùng</td>
+                            <td lang="en">Final Train Loss</td>
+                            <td>N/A (Chỉ chạy 20 steps)</td>
+                            <td>N/A (20 steps only)</td>
+                            <td>2.1754</td>
+                            <td>2.1754</td>
+                            <td><strong>1.9535 (Hội tụ sâu nhất)</strong></td>
+                            <td><strong>1.9535 (Deepest)</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- STEP 8 CARD -->
+        <section id="step-8" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <h2 class="section-title" lang="vi">Bước 8: Quản lý Mô hình & Tập dữ liệu chuyên nghiệp trên Hub</h2>
+                <h2 class="section-title" lang="en">Step 8: Hugging Face Hub Model & Dataset Management</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 8 - COMPLETED</div>
+            
+            <ul lang="vi">
+                <li><strong>Model Cards & Dataset Cards:</strong> Xây dựng các file README chuẩn hóa với metadata YAML phong phú phục vụ tìm kiếm SEO và widget hiển thị UI tự động.</li>
+                <li><strong>Kiểm soát Phiên bản:</strong> Đóng băng phiên bản sản xuất thông qua <strong>Git Tags (<code>v1.0</code>)</strong> và Commit Hashes để đảm bảo khả năng tái tạo ổn định trong sản xuất.</li>
+                <li><strong>Dataset Streaming (Tối ưu hóa VRAM vượt trội):</strong> Thực hiện benchmark thực nghiệm cơ chế Tải dữ liệu tiêu chuẩn so với Stream dữ liệu thời gian thực (<code>streaming=True</code>) trên tập dữ liệu IMDB.</li>
+            </ul>
+
+            <ul lang="en">
+                <li><strong>Model & Dataset Cards:</strong> Crafted industry-standard README cards containing explicit YAML frontmatter for searchability and automated UI widgets.</li>
+                <li><strong>Robust Version Control:</strong> Implemented model locking via <strong>Git Tags (<code>v1.0</code>)</strong> and commit hashes to guarantee immutable, repeatable production deployments.</li>
+                <li><strong>Dataset Streaming (SOTA Optimization):</strong> Conducted real-world benchmarking of standard dataset loading against **Dataset Streaming (`streaming=True`)**.</li>
+            </ul>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-gauge"></i> Kết quả So sánh: Tải Dữ Liệu Thường vs Dataset Streaming</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-gauge"></i> Performance Benchmark: Standard vs Streaming</h3>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th lang="vi">Phương pháp tải</th>
+                            <th lang="en">Loading Method</th>
+                            <th lang="vi">Bộ nhớ RAM tiêu tốn</th>
+                            <th lang="en">RAM Overhead</th>
+                            <th lang="vi">Thời gian khởi tạo tải</th>
+                            <th lang="en">Loading Init Time</th>
+                            <th lang="vi">Không gian ổ đĩa yêu cầu</th>
+                            <th lang="en">VRAM/Disk Space</th>
+                            <th lang="vi">Trường hợp sử dụng tốt nhất</th>
+                            <th lang="en">Best Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Standard Loading</strong></td>
+                            <td><strong>Standard Loading</strong></td>
+                            <td>~245.8 MB</td>
+                            <td>~245.8 MB</td>
+                            <td>~3.84 seconds</td>
+                            <td>~3.84 seconds</td>
+                            <td lang="vi">Yêu cầu tải toàn bộ file gốc về máy</td>
+                            <td lang="en">Requires downloading full raw data</td>
+                            <td lang="vi">Tập dữ liệu nhỏ/vừa, cần truy xuất nhanh ngẫu nhiên.</td>
+                            <td lang="en">Small to mid-size datasets where fast indexing is required.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dataset Streaming</strong></td>
+                            <td><strong>Dataset Streaming</strong></td>
+                            <td><strong>~0.00 MB</strong> (Sinh dữ liệu on-the-fly)</td>
+                            <td><strong>~0.00 MB</strong> (yielded on-the-fly)</td>
+                            <td><strong>~0.0004 seconds</strong> (Tức thì)</td>
+                            <td><strong>~0.0004 seconds</strong> (Instantaneous)</td>
+                            <td><strong>Zero disk usage</strong> (Không tốn ổ đĩa)</td>
+                            <td>Zero local disk usage</td>
+                            <td lang="vi"><strong>Huấn luyện LLM cực lớn</strong>, quy mô TB, Terabytes dữ liệu.</td>
+                            <td lang="en"><strong>Frontier LLM Pre-training/Fine-tuning</strong> on TB-scale corpora.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- STEP 9 CARD -->
+        <section id="step-9" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                <h2 class="section-title" lang="vi">Bước 9: Làm chủ Hugging Face Spaces (Giao diện Demo Tương Tác)</h2>
+                <h2 class="section-title" lang="en">Step 9: Mastering Hugging Face Spaces (Interactive Demos)</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 9 - COMPLETED</div>
+            
+            <p lang="vi">
+                Đóng gói các mô hình đã huấn luyện thành một ứng dụng web AI Hub đa nhiệm độc đáo, giao diện <strong>Glassmorphism UI</strong> thời thượng. Deploy tự động lên Hugging Face Space nội bộ.
+            </p>
+            <p lang="en">
+                Packaged the trained R&D models into an exquisite multi-task interactive web application featuring a premium <strong>Glassmorphism UI</strong>. Programmatically deployed it directly to Hugging Face Spaces.
+            </p>
+
+            <ul lang="vi">
+                <li><strong>Link Space đang hoạt động:</strong> <a href="https://huggingface.co/spaces/HalogenFlo/TIC_Guide" target="_blank">HalogenFlo/TIC_Guide</a></li>
+                <li><strong>Tab 1 (Phân loại Cảm xúc):</strong> Nhận diện cảm xúc văn bản thời gian thực sử dụng DeBERTa-v3.</li>
+                <li><strong>Tab 2 (Nhận diện Chữ viết tay):</strong> Bản vẽ tay (Sketchpad) và Tải ảnh lên tích hợp cùng mô hình ViT. Tự động chuyển đổi màu nét vẽ trắng trên nền đen để tăng tối đa độ chính xác của ViT.</li>
+                <li><strong>Tab 3 (AI Chatbot):</strong> Giao diện chat mượt mà, phản hồi dạng streaming với mô hình Qwen2.5-0.5B QLoRA.</li>
+                <li><strong>Mẹo tối ưu hóa Space:</strong> Lọc bỏ toàn bộ các gói phần cứng cục bộ nặng (<code>nvidia-*</code>, <code>cuda-*</code>, <code>triton</code>) ra khỏi <code>requirements.txt</code> để tránh lỗi crash container khi deploy trên hạ tầng CPU của Space miễn phí.</li>
+            </ul>
+
+            <ul lang="en">
+                <li><strong>Live Space Link:</strong> <a href="https://huggingface.co/spaces/HalogenFlo/TIC_Guide" target="_blank">HalogenFlo/TIC_Guide</a></li>
+                <li><strong>Tab 1 (Emotion Classifier):</strong> Real-time text classification based on DeBERTa-v3-base.</li>
+                <li><strong>Tab 2 (Handwriting Recognition):</strong> Handwriting Sketchpad & Image Upload tool integrated with ViT. Implemented automatic background inversion for compatibility.</li>
+                <li><strong>Tab 3 (AI Chatbot):</strong> Conversation interface with streaming token generation using Qwen2.5 QLoRA.</li>
+                <li><strong>Space Optimization:</strong> Filtered out absolute heavy system-level packages (<code>nvidia-*</code>, <code>cuda-*</code>, <code>triton</code>) to prevent free-tier CPU building crashes on Spaces.</li>
+            </ul>
+        </section>
+
+        <!-- STEP 10 CARD -->
+        <section id="step-10" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                <h2 class="section-title" lang="vi">Bước 10: Nghiên cứu Frontier LLM & Tối ưu hóa</h2>
+                <h2 class="section-title" lang="en">Step 10: Frontier LLM Training Research</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 10 - COMPLETED</div>
+            
+            <p lang="vi">
+                Nghiên cứu kiến trúc tiên phong của các siêu mô hình AI hàng đầu thế giới năm 2026 như DeepSeek-V3/R1, Llama 3.1, Qwen 2.5, Mistral, và cách ánh xạ trực tiếp các nghiên cứu này vào giá trị kinh doanh thực tế.
+            </p>
+            <p lang="en">
+                Researched cutting-edge architectures of SOTA models (DeepSeek-V3/R1, Llama 3.1, Qwen 2.5, Mistral) and mapped these theoretical insights into real-world enterprise business value.
+            </p>
+
+            <ul lang="vi">
+                <li><strong>Dịch chuyển sang Tối ưu hóa Hội tụ Inference (Inference-Optimal Model):</strong> Các mô hình hiện đại (như Llama 3 8B) được huấn luyện vượt xa điểm tối ưu Chinchilla truyền thống (overtraining). Điều này làm tăng chi phí huấn luyện ban đầu nhưng giúp mô hình thông minh hơn và giảm tối đa chi phí tài nguyên phần cứng (OpEx) khi chạy suy luận lâu dài ở quy mô sản xuất.</li>
+                <li><strong>Cơ chế Alignment nâng cao:</strong> So sánh SFT, RLHF (PPO) với các phương pháp căn chỉnh DPO, GRPO (Group Relative Policy Optimization) tiên phong của DeepSeek. GRPO loại bỏ mô hình Critic cồng kềnh, giảm <strong>50% VRAM</strong> huấn luyện, mở đường cho việc scale-up suy luận lập luận logic (Reasoning Chain-of-Thought).</li>
+                <li><strong>Kiến trúc MoE & MLA:</strong> Nghiên cứu kiến trúc Mixture of Experts (MoE), đặc biệt là <strong>MLA (Multi-head Latent Attention)</strong> giúp nén bộ nhớ KV Cache xuống còn 1/12, hỗ trợ xử lý batch cực lớn với tốc độ suy luận siêu tốc.</li>
+            </ul>
+
+            <ul lang="en">
+                <li><strong>Shift to Inference-Optimal Overtraining:</strong> Modern models (like Llama 3 8B) are deliberately trained far past the Chinchilla optimal point (overtraining). Overtraining a smaller model makes it smarter and cheaper to run during long-term production inference (saving OpEx).</li>
+                <li><strong>Advanced Post-training & Alignment:</strong> Evaluated SFT, RLHF (PPO), DPO, and GRPO (Group Relative Policy Optimization) popularized by DeepSeek-R1. GRPO eliminates the memory-heavy Critic model, saving **50%+ VRAM** and allowing reasoning-intensive RL to scale up.</li>
+                <li><strong>MoE & MLA Architectures:</strong> Explored Mixture of Experts (MoE) and **MLA (Multi-head Latent Attention)** which compresses the KV Cache to 1/12th, allowing massive batch sizes and lightning-fast inference.</li>
+            </ul>
+        </section>
+
+        <!-- STEP 11 CARD -->
+        <section id="step-11" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                <h2 class="section-title" lang="vi">Bước 11: Chiến lược Lựa chọn LLM Thương mại 5 Bước</h2>
+                <h2 class="section-title" lang="en">Step 11: Commercial LLM Selection 5-Step Strategy</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 11 - COMPLETED</div>
+            
+            <p lang="vi">
+                Thiết lập quy trình 5 bước vững chắc để đưa AI từ phòng Lab R&D ra ứng dụng thương mại thực tế, bảo đảm các tiêu chuẩn khắt khe về kỹ thuật, tài chính, đạo đức và pháp lý.
+            </p>
+            <p lang="en">
+                Established an industry-grade 5-step strategy to transition LLMs from R&D (open-source) to commercial production deployment, satisfying rigorous technical, financial, ethical, and legal standards.
+            </p>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-shield-halved"></i> 1. Tuân thủ Pháp lý & Bảo mật Tuyệt đối (Sovereign AI)</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-shield-halved"></i> 1. Legal Compliance & Security (Sovereign AI)</h3>
+            <p lang="vi">
+                Việc gửi dữ liệu khách hàng hoặc thông tin mật của doanh nghiệp lên các API bên thứ ba (như OpenAI) ẩn chứa nguy cơ rò rỉ dữ liệu, vi phạm các đạo luật quốc tế và nội địa. Do đó, việc triển khai **Sovereign AI (AI tự chủ)** thông qua tự host các mô hình mã nguồn mở trên hạ tầng Cloud riêng (VPC) là tối quan trọng:
+            </p>
+            <p lang="en">
+                Transmitting proprietary enterprise data or customer PII to external APIs poses massive data leakage risks. Therefore, adopting **Sovereign AI** by hosting open-source models on a private cloud (VPC) is mandatory:
+            </p>
+            
+            <ul lang="vi">
+                <li><strong>Tuân thủ Pháp lý Việt Nam:</strong> Tuân thủ nghiêm ngặt <strong><a href="https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Nghi-dinh-13-2023-ND-CP-bao-ve-du-lieu-ca-nhan-465185.aspx" target="_blank">Nghị định 13/2023/NĐ-CP về Bảo vệ Dữ liệu Cá nhân</a></strong> (Yêu cầu lưu trữ dữ liệu người dùng an toàn, cấm chuyển dữ liệu ra nước ngoài khi chưa được phép).</li>
+                <li><strong>Tuân thủ Quốc tế:</strong> Đáp ứng tiêu chuẩn thông tin <strong>ISO/IEC 27001</strong> và quy định quyền riêng tư nghiêm ngặt <strong>GDPR (General Data Protection Regulation)</strong> của châu Âu.</li>
+            </ul>
+
+            <ul lang="en">
+                <li><strong>Vietnam Legal Compliance:</strong> Adhere strictly to **<a href="https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Nghi-dinh-13-2023-ND-CP-bao-ve-du-lieu-ca-nhan-465185.aspx" target="_blank">Decree 13/2023/ND-CP on Personal Data Protection</a>** (requiring secure user data storage and restricting unauthorized overseas transfers).</li>
+                <li><strong>International Standards:</strong> Align with **ISO/IEC 27001** for security management systems and the European **GDPR (General Data Protection Regulation)** rules.</li>
+            </ul>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-scale-unbalanced"></i> 2. Đạo đức AI & Đánh giá TCO</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-scale-unbalanced"></i> 2. AI Ethics & TCO Assessment</h3>
+            <p lang="vi">
+                Áp dụng các khung đạo đức AI toàn cầu từ <strong>UNESCO</strong> và <strong>OECD</strong>, tập trung vào hai cột trụ chính: Công bằng (Fairness - không thiên vị văn hóa, tôn giáo, giới tính) và Trách nhiệm giải trình (Accountability - giám sát dữ liệu bởi con người).
+            </p>
+            <p lang="en">
+                Integrate global AI ethics frameworks from **UNESCO** and **OECD**, focusing on Fairness (free from biases) and Accountability (human-in-the-loop oversight).
+            </p>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th lang="vi">Tiêu chí so sánh</th>
+                            <th lang="en">Comparison Metric</th>
+                            <th lang="vi">API Mã nguồn Đóng (GPT-4o)</th>
+                            <th lang="en">Closed-Source API (GPT-4o)</th>
+                            <th lang="vi">Mã nguồn Mở Tự Host (Qwen 2.5 14B)</th>
+                            <th lang="en">Self-Hosted Open-Source (Qwen 2.5 14B)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td lang="vi">Bảo mật & Quyền riêng tư</td>
+                            <td lang="en">Data Privacy</td>
+                            <td lang="vi">Rủi ro cao (Dữ liệu truyền lên server bên thứ ba)</td>
+                            <td lang="en">High Risk (Data transmitted to external servers)</td>
+                            <td lang="vi"><strong>Kiểm soát 100% (Host trên VPC nội bộ)</strong></td>
+                            <td lang="en"><strong>100% Control (Local/VPC Hosting)</strong></td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">Tuân thủ Pháp lý (VN)</td>
+                            <td lang="en">Legal Compliance (VN)</td>
+                            <td lang="vi">Khó khăn trong việc cam kết tuân thủ NĐ 13</td>
+                            <td lang="en">Challenging to guarantee absolute compliance</td>
+                            <td lang="vi"><strong>Đạt chuẩn hoàn hảo (Sovereign AI)</strong></td>
+                            <td lang="en"><strong>Fully Compliant (Sovereign AI)</strong></td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">Độ tùy biến chuyên sâu</td>
+                            <td lang="en">Customization</td>
+                            <td lang="vi">Rất hạn chế (Chỉ qua Prompt hoặc API cơ bản)</td>
+                            <td lang="en">Highly Limited (Prompt engineering only)</td>
+                            <td lang="vi"><strong>Tuyệt đối (Tinh chỉnh QLoRA, RAG riêng biệt)</strong></td>
+                            <td lang="en"><strong>Full Ownership (Fine-tuning & RAG)</strong></td>
+                        </tr>
+                        <tr>
+                            <td lang="vi">TCO (Chi phí hàng tháng)</td>
+                            <td lang="en">TCO (Monthly Cost)</td>
+                            <td lang="vi">Biến động (Tăng tuyến tính theo lượng token dùng)</td>
+                            <td lang="en">Variable (Scales linearly with token consumption)</td>
+                            <td lang="vi"><strong>Tối ưu, cố định: ~$50-$100/tháng (VPS GPU chuyên dụng)</strong></td>
+                            <td lang="en"><strong>Optimized Fixed Cost: ~$50 - $100/month</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="subsection-title" lang="vi"><i class="fa-solid fa-shield-virus"></i> 3. Thiết lập Guardrails & Chiến lược Customization</h3>
+            <h3 class="subsection-title" lang="en"><i class="fa-solid fa-shield-virus"></i> 3. Guardrails & Customization Architecture</h3>
+            <ul lang="vi">
+                <li><strong>Kiến trúc Customization 3 Lớp:</strong> Lớp RAG (Grounding dữ liệu thật vào Vector DB để tránh hallucination) + Lớp QLoRA Fine-Tuning (Đồng nhất ngôn ngữ thương hiệu) + Lớp Alignment (DPO/GRPO tối ưu phản hồi).</li>
+                <li><strong>Safety Guardrails:</strong> Thiết lập bộ lọc bảo mật để ngăn chặn Prompt Injection, Jailbreak, tuân thủ hướng dẫn an toàn từ <strong>Đạo luật AI Châu Âu (EU AI Act)</strong> và định hướng an toàn thông tin quốc gia theo <strong>Quyết định 127/QĐ-TTg của Thủ tướng Chính phủ</strong>.</li>
+            </ul>
+
+            <ul lang="en">
+                <li><strong>3-Layer Customization Architecture:</strong> Layer 1: RAG (Vector DB grounding to eliminate hallucinations) + Layer 2: Instruction Fine-Tuning (QLoRA for brand voice) + Layer 3: Preference Alignment (DPO/GRPO).</li>
+                <li><strong>Safety Guardrails:</strong> Deploy moderation filters against Prompt Injection and Jailbreaks, satisfying global regulations (like the **EU AI Act**) and Vietnam's domestic **National AI Strategy to 2030 (Decision 127/QD-TTg)**.</li>
+            </ul>
+        </section>
+
+        <!-- STEP 12 CARD -->
+        <section id="step-12" class="glass-card">
+            <div class="section-header">
+                <div class="section-icon"><i class="fa-solid fa-server"></i></div>
+                <h2 class="section-title" lang="vi">Bước 12: Triển khai Hệ thống lên Google Vertex AI</h2>
+                <h2 class="section-title" lang="en">Step 12: Production Deployment on Vertex AI</h2>
+            </div>
+            <div class="status-badge"><i class="fa-solid fa-circle-check"></i> Step 12 - COMPLETED</div>
+            
+            <p lang="vi">
+                Cột mốc quan trọng nhất: Đưa mô hình đã huấn luyện lên hạ tầng sản xuất của Google Cloud Platform (GCP) Vertex AI, thiết lập cổng API an toàn và tự động dọn dẹp tài nguyên để tối ưu hóa chi phí.
+            </p>
+            <p lang="en">
+                The ultimate milestone: Deployed our custom fine-tuned QLoRA model to production on Google Cloud Platform (GCP) Vertex AI, verified real-world predictions, and established cost-saving resource cleanup pipelines.
+            </p>
+
+            <ul lang="vi">
+                <li><strong>Quy trình Đóng gói Container Serving:</strong>
+                    <ul>
+                        <li>Đóng gói model tùy chỉnh bằng Dockerfile trên local.</li>
+                        <li>Đẩy Container Image lên Google Artifact Registry bảo mật.</li>
+                        <li>Lưu trữ file trọng số mô hình QLoRA lên Google Cloud Storage (GCS).</li>
+                        <li>Đăng ký mô hình vào Vertex AI Model Registry, liên kết với port <code>8080</code> phục vụ suy luận.</li>
+                    </ul>
+                </li>
+                <li><strong>Triển khai Endpoint:</strong> Tạo Vertex Endpoint trên instance máy chủ <code>n1-standard-2</code>, cấu hình min/max replica tự động điều chỉnh theo lưu lượng tải thực tế.</li>
+                <li><strong>Xác thực & Dọn dẹp Tài nguyên (MLOps Best Practices):</strong>
+                    <ul>
+                        <li>Gửi request thử nghiệm thông qua Vertex AI Python SDK, nhận kết quả dự đoán trả về tức thì với độ trễ cực thấp.</li>
+                        <li>Thực hiện lệnh <code>undeploy_all()</code> và <code>delete()</code> để hủy Endpoint khi không sử dụng, giúp doanh nghiệp tiết kiệm hàng nghìn USD chi phí duy trì máy chủ rác.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <ul lang="en">
+                <li><strong>Custom Serving Container Pipeline:</strong>
+                    <ul>
+                        <li>Packaged the custom model locally using a Dockerfile.</li>
+                        <li>Created a Docker repository on Google Artifact Registry to push the container to GCP.</li>
+                        <li>Uploaded the trained QLoRA model weights to Google Cloud Storage (GCS) as a long-term artifact.</li>
+                        <li>Registered the model in the Vertex AI Model Registry, linking GCS URI and the serving container on port <code>8080</code>.</li>
+                    </ul>
+                </li>
+                <li><strong>Endpoint Deployment:</strong> Deployed the model on a dedicated <code>n1-standard-2</code> instance with custom replica scaling rules.</li>
+                <li><strong>MLOps Verification & Cost Optimization:</strong>
+                    <ul>
+                        <li>Sent predictive requests via the <code>google-cloud-aiplatform</code> SDK and verified instant SOTA outputs.</li>
+                        <li>Executed automated resource cleanups using <code>undeploy_all()</code> and <code>delete()</code> to ensure no runaway hosting costs on GCP.</li>
+                    </ul>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p lang="vi">© 2026 Dự án TIC. Báo cáo tiến độ tự động cập nhật và trình bày chuyên nghiệp.</p>
+            <p lang="en">© 2026 TIC Project. Progress report automatically generated & beautifully presented.</p>
+        </footer>
+    </main>
+
+    <!-- Floating UI Buttons -->
+    <button id="back-to-top" title="Lên đầu trang" aria-label="Back to Top">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <!-- Scripting for Multi-language & Active Scroll Menu -->
+    <script>
+        // Immutability & Functional Programming design for State Management
+        const getInitialLanguage = () => {
+            const savedLang = localStorage.getItem('user-language');
+            if (savedLang) return savedLang;
+            
+            // Auto detect from browser or default to Vietnamese
+            const browserLang = navigator.language || navigator.userLanguage;
+            return browserLang.startsWith('en') ? 'en' : 'vi';
+        };
+
+        const updateUIForLanguage = (lang) => {
+            const htmlElement = document.documentElement;
+            
+            // functional state transitions
+            if (lang === 'en') {
+                htmlElement.classList.remove('lang-vi');
+                htmlElement.classList.add('lang-en');
+                htmlElement.setAttribute('lang', 'en');
+                document.getElementById('btn-en').classList.add('active');
+                document.getElementById('btn-vi').classList.remove('active');
+            } else {
+                htmlElement.classList.remove('lang-en');
+                htmlElement.classList.add('lang-vi');
+                htmlElement.setAttribute('lang', 'vi');
+                document.getElementById('btn-vi').classList.add('active');
+                document.getElementById('btn-en').classList.remove('active');
+            }
+        };
+
+        const switchLanguage = (lang) => {
+            localStorage.setItem('user-language', lang);
+            updateUIForLanguage(lang);
+        };
+
+        // Active Scroll TOC Implementation
+        const registerTOCActiveScroll = () => {
+            const sections = document.querySelectorAll('section');
+            const navItems = document.querySelectorAll('.toc-item');
+
+            const onScroll = () => {
+                let currentSectionId = 'overview';
+                const scrollPosition = window.scrollY + 200;
+
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.offsetHeight;
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                        currentSectionId = section.getAttribute('id');
+                    }
+                });
+
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-target') === currentSectionId) {
+                        item.classList.add('active');
+                    }
+                });
+            };
+
+            window.addEventListener('scroll', onScroll);
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            // Apply language state
+            const currentLanguage = getInitialLanguage();
+            updateUIForLanguage(currentLanguage);
+
+            // TOC listener
+            registerTOCActiveScroll();
+
+            // Mobile menu toggle
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                const isOpen = sidebar.classList.contains('open');
+                menuToggle.innerHTML = isOpen ? '<i class="fa-solid fa-xmark"></i>' : '<i class="fa-solid fa-bars"></i>';
+            });
+
+            // Back to Top functionality
+            const backToTopBtn = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            });
+
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // Close mobile sidebar on link click
+            const navLinks = document.querySelectorAll('.toc-item a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 1024) {
+                        sidebar.classList.remove('open');
+                        menuToggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
