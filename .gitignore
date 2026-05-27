@@ -16,3 +16,4 @@ notebook/qwen-2.5b-full-finetuned/
 notebook/Qwen2.5-0.5B-Instruct-lora-finetuned/
 notebook/qwen-2.5b-finetuned-qlora/
 notebook/dummy_model/
+gcp-key.json

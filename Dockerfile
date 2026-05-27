@@ -4,9 +4,8 @@ WORKDIR /workspace
 
 COPY ./app /workspace/app
 
-RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
-    torch torchvision torchaudio && \
-    pip install -- no-cache-dir  fastapi uvicorn transformers google-cloud-aiplatform huggingface_hub
+RUN pip install --no-cache-dir torch fastapi uvicorn transformers google-cloud-aiplatform huggingface_hub peft
+
 
 EXPOSE 8000
 
