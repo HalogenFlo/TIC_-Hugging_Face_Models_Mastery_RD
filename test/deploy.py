@@ -129,6 +129,8 @@ try:
         artifact_uri=f"{BUCKET_URI}/qwen-2.5b-finetuned-qlora",
         serving_container_image_uri=image_tag,
         serving_container_ports=[8000],
+        serving_container_health_route="/health",
+        serving_container_predict_route="/predict",
         serving_container_environment_variables={
             "GCS_URI": f"{BUCKET_URI}/qwen-2.5b-finetuned-qlora"
         }

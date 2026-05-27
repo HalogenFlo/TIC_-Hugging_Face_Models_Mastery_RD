@@ -6,8 +6,7 @@ from dotenv import load_dotenv
 from peft import PeftModel
 load_dotenv()
 app =FastAPI()
-GCS_URI = os.environ.get("GCS_URI", "gs://ticmastery/hf-ticmastery")
-MODEL_PATH = GCS_URI.replace("gs://", "/gcs/") if GCS_URI.startswith("gs://") else "/workspace/model"
+MODEL_PATH = os.environ.get("AIP_MODEL_DIR", "/workspace/model")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 

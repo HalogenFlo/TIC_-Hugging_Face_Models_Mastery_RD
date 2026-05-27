@@ -6,6 +6,8 @@ COPY ./app /workspace/app
 
 RUN pip install --no-cache-dir torch fastapi uvicorn transformers google-cloud-aiplatform huggingface_hub peft
 
+RUN python3 -c "from transformers import AutoModelForCausalLM, AutoTokenizer; AutoTokenizer.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct'); AutoModelForCausalLM.from_pretrained('Qwen/Qwen2.5-0.5B-Instruct')"
+
 
 EXPOSE 8000
 
