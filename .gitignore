@@ -9,7 +9,7 @@ unsloth_compiled_cache/
 notebook/microsoft-deberta-v3-base-emotion-recognition/
 notebook/data/
 notebook/vit-emnist-byclass/
-temp
+temp/*
 notebook/transformer
 notebook/qwen-2.5b-finetuned/
 notebook/qwen-2.5b-full-finetuned/

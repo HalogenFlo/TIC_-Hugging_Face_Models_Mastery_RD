@@ -65,11 +65,13 @@ try:
     print("[2/3] Creating Endpoint for Model Garden...")
     endpoint_garden = aiplatform.Endpoint.create(display_name="qwen-garden-endpoint-prod")
     
-    print("[3/3] Deploying model to Endpoint (Using CPU machine n1-standard-2)...")
+    print("[3/3] Deploying model to Endpoint (Using GPU machine n1-standard-4 + Tesla T4)...")
     print("      Note: This process takes about 5-8 minutes to provision GCP hardware...")
     model_garden.deploy(
         endpoint=endpoint_garden,
-        machine_type="n1-standard-2",
+        machine_type="n1-standard-4",
+        accelerator_type="NVIDIA_TESLA_T4",
+        accelerator_count=1,
         min_replica_count=1,
         max_replica_count=1
     )
@@ -141,11 +143,13 @@ try:
     endpoint_custom = aiplatform.Endpoint.create(display_name="qwen-custom-endpoint-prod")
 
     # 2.8 Deploy Custom Model to Endpoint
-    print("[3/3] Deploying Custom Model to Endpoint (Using CPU machine n1-standard-2)...")
+    print("[3/3] Deploying Custom Model to Endpoint (Using GPU machine n1-standard-4 + Tesla T4)...")
     print("      Note: This process takes about 5-8 minutes...")
     model_custom.deploy(
         endpoint=endpoint_custom,
-        machine_type="n1-standard-2",
+        machine_type="n1-standard-4",
+        accelerator_type="NVIDIA_TESLA_T4",
+        accelerator_count=1,
         min_replica_count=1,
         max_replica_count=1
     )
