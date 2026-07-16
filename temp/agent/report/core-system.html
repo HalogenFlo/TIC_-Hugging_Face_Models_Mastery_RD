@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cấu hình & Trạng thái Hệ thống Cốt lõi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Sidebar -->
+        <aside class="sidebar">
+            <div class="brand-section">
+                <div class="brand-logo">L</div>
+                <div class="brand-name">LegalMAS Docs</div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html">
+                        <span class="nav-icon">📊</span>
+                        <span>Sơ đồ & Lộ trình</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="decisions.html">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Quyết định & Ràng buộc</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="core-system.html">
+                        <span class="nav-icon">🛡️</span>
+                        <span>Cấu hình & State</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tools-reference.html">
+                        <span class="nav-icon">🛠️</span>
+                        <span>Chi tiết Hàm của Tools</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="neo4j-schema.html">
+                        <span class="nav-icon">🔗</span>
+                        <span>Neo4j GraphRAG</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header style="text-align: center; margin-bottom: 3rem;">
+                <div class="badge badge-indigo" style="margin-bottom: 1rem;">Hệ thống Cốt lõi</div>
+                <h1 style="font-size: 2.5rem; margin-bottom: 0.75rem;">Cấu hình Cục bộ & Trạng thái Toàn cục</h1>
+                <p class="subtitle" style="font-size: 1.15rem;">Định nghĩa chi tiết về cấu trúc thư mục, tệp cấu hình trung tâm (config.py) và bộ nhớ chung toàn hệ thống (state.py).</p>
+            </header>
+
+            <!-- PHẦN 1: CẤU TRÚC PHÂN CHIA THƯ MỤC -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">1. Cấu trúc Thư mục Dự án Bắt buộc</h2>
+                <p>Mã nguồn hệ thống được tổ chức chặt chẽ theo cấu trúc phân lớp khoa học:</p>
+                <pre>agent/
+├── state.py                      # Global AgentState (TypedDict cho LangGraph)
+├── config.py                     # Cấu hình toàn cục & Adapter LLM/DB
+├── graph.py                      # Định nghĩa luồng StateGraph LangGraph
+│
+├── 📂 tools/                     # CÁC CÔNG CỤ THÔ (Pure functions - Mỗi file = 1 tool duy nhất)
+│   ├── __init__.py
+│   ├── search_vector_db.py        # Tool truy cập Vector Index của Neo4j
+│   ├── web_search_mcp.py         # Tool tìm kiếm thông tin qua Internet
+│   ├── search_legal_graph.py      # Tool Cypher query duyệt đồ thị Neo4j
+│   ├── check_legal_status.py      # Tool kiểm tra trạng thái hiệu lực pháp lý
+│   ├── read_document_chunk.py     # Tool đọc phân đoạn tài liệu thô
+│   ├── validate_citations.py      # Tool đối chiếu trích dẫn nguồn
+│   ├── generate_report.py         # Tool xuất bản báo cáo (Strategy Pattern)
+│   ├── send_email_action.py       # Tool gửi báo cáo kết quả qua SMTP Email
+│   └── answer_directly.py         # Tool bypass phản hồi trực tiếp
+│
+├── 📂 skills/                    # ĐÓNG GÓI NGHIỆP VỤ (Biết khi nào gọi tool nào)
+│   ├── __init__.py
+│   ├── search_retrieval.py        # Skill tra cứu nghiệp vụ tổng hợp
+│   ├── analysis.py               # Skill đọc hiểu và trích xuất sâu
+│   └── reporting.py              # Skill lựa chọn formatter và xuất kết quả
+│
+├── 📂 agents/                    # TÁC NHÂN ĐỘC LẬP (Mỗi agent = 1 file riêng, code độc lập)
+│   ├── __init__.py
+│   ├── base.py                   # Interface BaseAgent quy định Hợp đồng 4 phần
+│   ├── query_reform.py           # Query Reformulation Agent tối ưu truy vấn
+│   ├── law_tax.py                # Law Agent chuyên môn Luật Thuế Việt Nam
+│   ├── law_land.py               # Law Agent chuyên môn Luật Đất đai Việt Nam
+│   ├── conflict.py               # Conflict Resolution Agent xử lý mâu thuẫn
+│   └── synthesis.py              # Synthesis & Validation Agent soạn draft
+│
+├── 📂 memory/                    # BỘ NHỚ VÀ TỐI ƯU HÓA NGỮ CẢNH
+│   ├── __init__.py
+│   ├── compaction.py             # Compaction Engine nén context
+│   └── memory_store.py           # Redis (session) + PostgreSQL (personal)
+│
+├── loop_controller.py            # Loop Controller + Verifier + Human Checkpoint
+├── orchestrator.py               # Coordinator logic (Intent, Scaling, Routing)
+└── main.py                       # Entry point chạy hệ thống</pre>
+            </section>
+
+            <!-- PHẦN 2: CONFIG.PY -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">2. Cấu hình Hệ thống (config.py)</h2>
+                <p>Tệp <code>config.py</code> đóng vai trò là trung tâm quản lý cấu hình môi trường, khởi tạo driver kết nối cơ sở dữ liệu và chuyển đổi giao tiếp mô hình LLM (Adapters).</p>
+
+                <h3 style="color: var(--color-accent); margin-top: 1.5rem;">2.1. Quản lý Kết nối Cơ sở dữ liệu (Database Drivers)</h3>
+                <div class="card" style="border-left: 4px solid var(--color-success); margin-bottom: 1.5rem;">
+                    <ul style="padding-left: 1.5rem; line-height: 1.8;">
+                        <li><strong>Neo4j Database:</strong> Quản lý qua hàm <code>get_neo4j_driver()</code>, cung cấp instance kết nối đồ thị duy nhất và tự động đóng thông qua <code>close_neo4j_driver()</code>.</li>
+                        <li><strong>Redis Client:</strong> Hàm <code>get_redis_client()</code> khởi tạo kết nối đến Redis, dùng để lưu giữ bộ nhớ phiên làm việc ngắn hạn (short-term session memory).</li>
+                        <li><strong>PostgreSQL / Relational Connection:</strong> Hàm <code>get_db_connection()</code> tự động lựa chọn adapter kết nối: ưu tiên SQLAlchemy Engine nếu có cấu hình URI, hoặc tự động fallback về thư viện <code>psycopg2</code> (cho Postgres) hoặc <code>pymysql</code> (cho MySQL) để lưu trữ bộ nhớ dài hạn của người dùng.</li>
+                    </ul>
+                </div>
+
+                <h3 style="color: var(--color-accent); margin-top: 1.5rem;">2.2. Giao thức tương thích LLM (Model Adapters)</h3>
+                <p>Để hệ thống Multi-Agent có thể hoạt động độc lập với nhà cung cấp mô hình (Model-Agnostic), <code>config.py</code> cung cấp hai adapter chuyển đổi trung gian:</p>
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="card" style="flex: 1; border-left: 3px solid var(--color-accent);">
+                        <strong style="color: #fff;">OpenAIModelAdapter</strong>
+                        <p style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 0;">Sử dụng SDK OpenAI để tương thích các dòng GPT. Hỗ trợ <code>beta.chat.completions.parse</code> để bắt buộc ép cấu trúc JSON Schema (Structured Output) thông qua Pydantic.</p>
+                    </div>
+                    <div class="card" style="flex: 1; border-left: 3px solid var(--color-warning);">
+                        <strong style="color: #fff;">GeminiModelAdapter</strong>
+                        <p style="font-size: 0.85rem; margin-top: 0.5rem; margin-bottom: 0;">Tích hợp SDK Google GenAI mới nhất, chuyển đổi định dạng danh sách hội thoại thô của LangGraph sang cấu trúc <code>contents</code> và <code>system_instruction</code> riêng biệt của Google.</p>
+                    </div>
+                </div>
+
+                <h3 style="color: var(--color-accent); margin-top: 1.5rem;">2.3. Hằng số Điều phối & Giới hạn</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 35%;">Tham số Cấu hình</th>
+                            <th style="width: 25%;">Giá trị mặc định</th>
+                            <th>Mục đích sử dụng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>MAX_LOOP_STEPS</code></td><td><code>5</code></td><td>Giới hạn số vòng lặp tối đa của Loop Controller nhằm chống lặp vô hạn.</td></tr>
+                        <tr><td><code>CLARIFICATION_THRESHOLD</code></td><td><code>0.75</code></td><td>Ngưỡng confidence tối thiểu. Dưới ngưỡng này, Clarification Gate sẽ hỏi lại người dùng.</td></tr>
+                        <tr><td><code>COMPACTION_TOKEN_THRESHOLD</code></td><td><code>10000</code></td><td>Ngưỡng Token kích hoạt cơ chế nén ngữ cảnh (Compaction) để tránh phình bộ nhớ.</td></tr>
+                        <tr><td><code>EFFORT_LEVELS</code></td><td><code>1 / 10 / 15</code></td><td>Giới hạn tối đa số Tool Call được phép thực thi tương ứng với cấp độ khó (Bypass, Simple, Complex).</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- PHẦN 3: STATE.PY -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">3. Bộ nhớ Toàn cục & State Management (state.py)</h2>
+                <p>Tệp <code>state.py</code> định nghĩa lớp <code>AgentState</code> dùng chung cho toàn bộ đồ thị LangGraph, đóng vai trò là "bảng tin trung tâm" để các Agent ghi nhận thông tin và chuyển tiếp dữ liệu cho nhau.</p>
+
+                <h3 style="color: var(--color-accent); margin-top: 1.5rem;">3.1. Các Reducers gộp dữ liệu song song (Parallel Reducers)</h3>
+                <p>Khi các Sub-Agent chạy song song (Fan-out/Fan-in), LangGraph mặc định sẽ ghi đè biến trạng thái. Để giải quyết, <code>state.py</code> định nghĩa hai hàm gộp dữ liệu đặc biệt:</p>
+                <div class="card" style="border-left: 4px solid var(--color-warning); margin-bottom: 1.5rem;">
+                    <ul style="padding-left: 1.5rem; line-height: 1.8;">
+                        <li><strong><code>merge_dict(left, right)</code>:</strong> Gộp lũy kế các cặp Key-Value từ các Agent khác nhau vào một dictionary trạng thái chung (dùng cho <code>domain_outputs</code>, <code>evaluation</code>) thay vì ghi đè lẫn nhau.</li>
+                        <li><strong><code>merge_list(left, right)</code>:</strong> Cộng dồn danh sách các phát hiện xung đột và trích dẫn nguồn từ các nhánh chạy song song khác nhau (dùng cho <code>detected_domains</code>, <code>conflicts</code>, <code>citations</code>).</li>
+                    </ul>
+                </div>
+
+                <h3 style="color: var(--color-accent); margin-top: 1.5rem;">3.2. Cấu trúc chi tiết của AgentState</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">Trường trạng thái</th>
+                            <th style="width: 25%;">Kiểu dữ liệu (Type)</th>
+                            <th>Mô tả chức năng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>user_id</code></td><td><code>str</code></td><td>Định danh người dùng đang đăng nhập để nạp dữ liệu cá nhân hóa.</td></tr>
+                        <tr><td><code>user_profile</code></td><td><code>Dict[str, Any]</code></td><td>Lưu trữ hồ sơ cá nhân hóa (Facts & Preferences) nạp từ Postgres.</td></tr>
+                        <tr><td><code>messages</code></td><td><code>Annotated[..., add_messages]</code></td><td>Lịch sử cuộc hội thoại (sử dụng add_messages để nối đuôi tin nhắn).</td></tr>
+                        <tr><td><code>raw_query</code></td><td><code>str</code></td><td>Câu hỏi thô ban đầu do người dùng nhập vào.</td></tr>
+                        <tr><td><code>refined_query</code></td><td><code>str</code></td><td>Câu hỏi đã được Query Reform Agent chuẩn hóa, sửa lỗi chính tả.</td></tr>
+                        <tr><td><code>effort_level</code></td><td><code>str</code></td><td>Cấp độ khó của tác vụ ("bypass" | "simple" | "complex").</td></tr>
+                        <tr><td><code>detected_domains</code></td><td><code>List[str] (merge_list)</code></td><td>Danh sách các lĩnh vực luật bị ảnh hưởng cần định tuyến.</td></tr>
+                        <tr><td><code>domain_outputs</code></td><td><code>Dict (merge_dict)</code></td><td>Kết quả nghiên cứu thô trả về từ các Law Agent.</td></tr>
+                        <tr><td><code>conflicts</code></td><td><code>List (merge_list)</code></td><td>Danh sách các mâu thuẫn/xung đột pháp lý được phát hiện bởi Conflict Agent.</td></tr>
+                        <tr><td><code>draft_answer</code></td><td><code>str</code></td><td>Dự thảo câu trả lời do Synthesis Agent soạn thảo.</td></tr>
+                        <tr><td><code>citations</code></td><td><code>List (merge_list)</code></td><td>Danh sách các trích dẫn luật được kiểm chứng.</td></tr>
+                        <tr><td><code>loop_step</code></td><td><code>int</code></td><td>Số bước lặp hiện tại trong chu trình phản hồi.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

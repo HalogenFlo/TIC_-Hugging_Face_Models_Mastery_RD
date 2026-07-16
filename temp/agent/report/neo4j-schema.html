@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiến trúc Neo4j GraphRAG & Changelog</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Sidebar -->
+        <aside class="sidebar">
+            <div class="brand-section">
+                <div class="brand-logo">L</div>
+                <div class="brand-name">LegalMAS Docs</div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html">
+                        <span class="nav-icon">📊</span>
+                        <span>Sơ đồ & Lộ trình</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="decisions.html">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Quyết định & Ràng buộc</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="core-system.html">
+                        <span class="nav-icon">🛡️</span>
+                        <span>Cấu hình & State</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tools-reference.html">
+                        <span class="nav-icon">🛠️</span>
+                        <span>Chi tiết Hàm của Tools</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="neo4j-schema.html">
+                        <span class="nav-icon">🔗</span>
+                        <span>Neo4j GraphRAG</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header style="text-align: center; margin-bottom: 3rem;">
+                <div class="badge badge-indigo" style="margin-bottom: 1rem;">Kiến trúc Cơ sở Dữ liệu</div>
+                <h1 style="font-size: 2.5rem; margin-bottom: 0.75rem;">Neo4j GraphRAG Schema & Changelog</h1>
+                <p class="subtitle" style="font-size: 1.15rem;">Chi tiết kiến trúc đồ thị tri thức pháp lý 5 tầng Node và lịch sử các thay đổi truy vấn Cypher.</p>
+            </header>
+
+            <!-- PHẦN 1: SƠ ĐỒ KIẾN TRÚC 5 TẦNG NODE -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">1. Kiến trúc Đồ thị 5 Tầng Node</h2>
+
+                <div class="flow-diagram">
+                    <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%; max-width: 800px;">
+                        <!-- Tầng 1: Norm -->
+                        <div class="card" style="border-left: 4px solid var(--color-accent); text-align: center;">
+                            <div class="card-title" style="justify-content: center;">
+                                <span class="badge badge-indigo">Tầng 1</span>
+                                <span>Norm — Văn bản pháp luật (5,941 nodes)</span>
+                            </div>
+                            <p style="margin: 0; font-size: 0.85rem;">8 quan hệ pháp lý: CITES · IMPLEMENTS · SUPPLEMENTS · AMENDS · PARTIALLY_TERMINATES · TERMINATES · REFERS_TO · RELATED_TO</p>
+                        </div>
+                        <div style="text-align: center; color: var(--text-secondary); font-size: 1.5rem;">↓ <span style="font-size: 0.8rem;">CONTAINS (17,238)</span></div>
+
+                        <!-- Tầng 2: Component -->
+                        <div class="card" style="border-left: 4px solid var(--color-success); text-align: center;">
+                            <div class="card-title" style="justify-content: center;">
+                                <span class="badge badge-success">Tầng 2</span>
+                                <span>Component — Điều / Khoản / Điểm (33,668 nodes)</span>
+                            </div>
+                            <p style="margin: 0; font-size: 0.85rem;">Phân cấp: Chương → Mục → Điều → Khoản → Điểm (CONTAINS 16,430)</p>
+                        </div>
+                        <div style="display: flex; justify-content: space-around; color: var(--text-secondary); font-size: 0.85rem;">
+                            <span>↓ HAS_VERSION</span>
+                            <span>↓ HAS_ACTION (235)</span>
+                        </div>
+
+                        <!-- Tầng 3+4: Version + Action -->
+                        <div style="display: flex; gap: 1rem;">
+                            <div class="card" style="flex: 1; border-left: 4px solid var(--color-warning); text-align: center;">
+                                <div class="card-title" style="justify-content: center;">
+                                    <span class="badge badge-warning">Tầng 3</span>
+                                    <span>Version</span>
+                                </div>
+                                <p style="margin: 0; font-size: 0.85rem;">Phiên bản hiệu lực (fallback nếu rỗng)</p>
+                            </div>
+                            <div class="card" style="flex: 1; border-left: 4px solid var(--color-danger); text-align: center;">
+                                <div class="card-title" style="justify-content: center;">
+                                    <span class="badge" style="background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3);">Tầng 4</span>
+                                    <span>Action (235 nodes)</span>
+                                </div>
+                                <p style="margin: 0; font-size: 0.85rem;">APPLY_TO → Component đích</p>
+                            </div>
+                        </div>
+                        <div style="text-align: center; color: var(--text-secondary); font-size: 1.5rem;">↓ <span style="font-size: 0.8rem;">HAS_TEXTUNIT (29,112 + 235)</span></div>
+
+                        <!-- Tầng 5: TextUnit -->
+                        <div class="card" style="border-left: 4px solid var(--color-accent); text-align: center;">
+                            <div class="card-title" style="justify-content: center;">
+                                <span class="badge badge-indigo">Tầng 5</span>
+                                <span>TextUnit — Nội dung + Vector Embedding (29,347 nodes)</span>
+                            </div>
+                            <p style="margin: 0; font-size: 0.85rem;">Phục vụ semantic search qua <code>textunit_embedding_index</code></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PHẦN 2: BẢNG THUỘC TÍNH -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">2. Thuộc tính (Properties) của từng Node</h2>
+
+                <h3 style="color: var(--color-accent);">🏛️ Norm</h3>
+                <table>
+                    <thead><tr><th style="width: 30%;">Thuộc tính</th><th>Mô tả</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>norm_id</code></td><td>ID nội bộ</td></tr>
+                        <tr><td><code>norm_number</code></td><td>Số hiệu văn bản (VD: <code>83/2014/NĐ-CP</code>)</td></tr>
+                        <tr><td><code>norm_type</code></td><td>Loại văn bản (Luật, Nghị định, Thông tư...)</td></tr>
+                        <tr><td><code>title</code></td><td>Tiêu đề đầy đủ</td></tr>
+                        <tr><td><code>validity_status</code></td><td>Trạng thái hiệu lực</td></tr>
+                        <tr><td><code>published_date</code></td><td>Ngày ban hành</td></tr>
+                        <tr><td><code>valid_from</code></td><td>Ngày có hiệu lực</td></tr>
+                        <tr><td><code>signer</code></td><td>Người ký</td></tr>
+                        <tr><td><code>publisher</code></td><td>Cơ quan ban hành</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 style="color: var(--color-success);">📋 Component</h3>
+                <table>
+                    <thead><tr><th style="width: 30%;">Thuộc tính</th><th>Mô tả</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>comp_id</code></td><td>ID duy nhất (VD: <code>127429__c59</code>)</td></tr>
+                        <tr><td><code>norm_id</code></td><td>ID văn bản mẹ</td></tr>
+                        <tr><td><code>citation</code></td><td>Trích dẫn (VD: Điều 17, Khoản 3)</td></tr>
+                        <tr><td><code>level</code></td><td>Cấp bậc (<code>dieu</code>, <code>khoan</code>, <code>diem</code>)</td></tr>
+                        <tr><td><code>title_text</code></td><td>Tiêu đề / nội dung ngắn</td></tr>
+                        <tr><td><code>order_index</code></td><td>Thứ tự sắp xếp trong văn bản</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 style="color: var(--color-accent);">📝 TextUnit</h3>
+                <table>
+                    <thead><tr><th style="width: 30%;">Thuộc tính</th><th>Mô tả</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>unit_id</code></td><td>ID duy nhất</td></tr>
+                        <tr><td><code>accumulated_text</code></td><td>Nội dung văn bản đầy đủ</td></tr>
+                        <tr><td><code>embedding</code></td><td>Vector embedding (semantic search)</td></tr>
+                        <tr><td><code>language</code></td><td>Ngôn ngữ</td></tr>
+                        <tr><td><code>type</code></td><td>Loại đoạn văn bản</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 style="color: var(--color-danger);">⚡ Action</h3>
+                <table>
+                    <thead><tr><th style="width: 30%;">Thuộc tính</th><th>Mô tả</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>action_id</code></td><td>ID duy nhất</td></tr>
+                        <tr><td><code>amending_doc_number</code></td><td>Số hiệu văn bản sửa đổi</td></tr>
+                        <tr><td><code>relation_type</code></td><td>Loại hành động (<code>SUPPLEMENTS</code>, <code>PARTIALLY_TERMINATES</code>...)</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 style="color: var(--color-warning);">🔄 Version</h3>
+                <table>
+                    <thead><tr><th style="width: 30%;">Thuộc tính</th><th>Mô tả</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>version_id</code></td><td>ID phiên bản</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size: 0.85rem; color: var(--color-warning);">⚠️ Node Version hiện có rất ít dữ liệu. Các truy vấn sử dụng cơ chế fallback: ưu tiên Version trước, nếu rỗng thì lấy trực tiếp từ Component.</p>
+            </section>
+
+            <!-- PHẦN 3: INDEXES -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">3. Indexes đã cấu hình</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tên Index</th>
+                            <th>Loại</th>
+                            <th>Label</th>
+                            <th>Properties</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>textunit_embedding_index</code></td><td><span class="badge badge-indigo">VECTOR</span></td><td>TextUnit</td><td><code>embedding</code></td></tr>
+                        <tr><td><code>component_title_fulltext</code></td><td><span class="badge badge-success">FULLTEXT</span></td><td>Component</td><td><code>title_text</code>, <code>citation</code></td></tr>
+                        <tr><td><code>norm_title_fulltext</code></td><td><span class="badge badge-success">FULLTEXT</span></td><td>Norm</td><td><code>title</code></td></tr>
+                        <tr><td><code>textunit_acc_text_fulltext</code></td><td><span class="badge badge-success">FULLTEXT</span></td><td>TextUnit</td><td><code>accumulated_text</code></td></tr>
+                        <tr><td><code>comp_id</code></td><td><span class="badge badge-warning">RANGE</span></td><td>Component</td><td><code>comp_id</code></td></tr>
+                        <tr><td><code>norm_id</code></td><td><span class="badge badge-warning">RANGE</span></td><td>Norm</td><td><code>norm_id</code></td></tr>
+                        <tr><td><code>unit_id</code></td><td><span class="badge badge-warning">RANGE</span></td><td>TextUnit</td><td><code>unit_id</code></td></tr>
+                        <tr><td><code>action_id</code></td><td><span class="badge badge-warning">RANGE</span></td><td>Action</td><td><code>action_id</code></td></tr>
+                        <tr><td><code>norm_status</code></td><td><span class="badge badge-warning">RANGE</span></td><td>Norm</td><td><code>validity_status</code></td></tr>
+                        <tr><td><code>comp_level</code></td><td><span class="badge badge-warning">RANGE</span></td><td>Component</td><td><code>level</code></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- PHẦN 3.5: VAI TRÒ THỰC TẾ CỦA VECTOR SEARCH -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">4. Vai trò Thực tế của search_vector_db.py</h2>
+                <p>Hàm <code>search_vector_db.py</code> đóng vai trò là <strong>Cửa ngõ (Entry Point) kết nối Câu hỏi tự nhiên của Người dùng với Đồ thị tri thức (GraphRAG)</strong>. Quá trình xử lý thực tế diễn ra như sau:</p>
+                
+                <div class="card" style="border-left: 4px solid var(--color-success); margin-bottom: 1.5rem;">
+                    <div class="timeline" style="margin-bottom: 0;">
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-title">Bước 1: Tìm kiếm tương đồng Ngữ nghĩa (Semantic Lookup)</div>
+                            <div class="timeline-content">
+                                Người dùng gửi câu hỏi ngôn ngữ tự nhiên. Hệ thống sinh vector embedding và truy vấn trên <code>textunit_embedding_index</code> của Neo4j để tìm ra các đoạn văn bản luật (<code>TextUnit</code>) có ý nghĩa sát nhất.
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-title">Bước 2: Xác định Điểm neo Đồ thị (Graph Anchoring)</div>
+                            <div class="timeline-content">
+                                Nhờ cơ chế <code>CONTAINS*1..6</code>, câu truy vấn tự động JOIN ngược lên để lấy <code>comp_id</code> (ID điều khoản) và <code>norm_number</code> (Số hiệu luật). Đây là các <strong>điểm neo (anchor)</strong> vật lý giúp hệ thống biết bắt đầu duyệt từ đâu trên đồ thị.
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-title">Bước 3: Tra cứu Đồ thị bổ trợ (Graph Traversal)</div>
+                            <div class="timeline-content">
+                                Hệ thống chuyển tiếp <code>comp_id</code> sang <code>search_legal_graph.py</code> để duyệt đệ quy tìm chuỗi sửa đổi (Action) hoặc chuyển tiếp <code>norm_number</code> sang <code>get_norm_relations</code> để tìm văn bản liên kết chéo.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="color: var(--color-accent);">Cypher Query thực tế</h3>
+                <pre>CALL db.index.vector.queryNodes('textunit_embedding_index', $limit, $query_vector)
+YIELD node, score
+OPTIONAL MATCH (c:Component)-[:HAS_TEXTUNIT]->(node)
+OPTIONAL MATCH (n:Norm)-[:CONTAINS*1..6]->(c)
+RETURN node.unit_id AS unit_id, 
+       node.accumulated_text AS accumulated_text, 
+       c.citation AS citation,
+       c.comp_id AS comp_id,
+       n.norm_number AS norm_number,
+       n.norm_type AS norm_type,
+       score</pre>
+            </section>
+
+            <!-- PHẦN 5: CHUỖI SỬA ĐỔI ĐỆ QUY -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">5. Cơ chế Duyệt Đệ quy Chuỗi Sửa đổi</h2>
+                <p>Khi Điều khoản A bị sửa đổi bởi Điều khoản B, và Điều khoản B tiếp tục bị sửa đổi bởi Điều khoản C, đồ thị liên kết đệ quy qua chuỗi <code>Action → APPLY_TO → Component → HAS_ACTION → Action</code>:</p>
+
+                <div class="flow-diagram">
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%; max-width: 700px;">
+                        <div style="display: flex; gap: 1rem; align-items: center; justify-content: center;">
+                            <div class="card" style="flex: 0 0 auto; padding: 1rem; text-align: center; border-left: 3px solid var(--color-danger);">
+                                <strong>Component C</strong><br><span style="font-size: 0.8rem; color: var(--text-secondary);">Điều khoản Luật C</span>
+                            </div>
+                            <span style="color: var(--text-secondary);">→ HAS_ACTION →</span>
+                            <div class="card" style="flex: 0 0 auto; padding: 1rem; text-align: center; border-left: 3px solid var(--color-warning);">
+                                <strong>Action C</strong><br><span style="font-size: 0.8rem; color: var(--text-secondary);">Sửa đổi B</span>
+                            </div>
+                        </div>
+                        <div style="text-align: center; color: var(--text-secondary); font-size: 1.2rem;">↓ APPLY_TO (depth = 3)</div>
+                        <div style="display: flex; gap: 1rem; align-items: center; justify-content: center;">
+                            <div class="card" style="flex: 0 0 auto; padding: 1rem; text-align: center; border-left: 3px solid var(--color-success);">
+                                <strong>Component B</strong><br><span style="font-size: 0.8rem; color: var(--text-secondary);">Điều khoản Luật B</span>
+                            </div>
+                            <span style="color: var(--text-secondary);">→ HAS_ACTION →</span>
+                            <div class="card" style="flex: 0 0 auto; padding: 1rem; text-align: center; border-left: 3px solid var(--color-warning);">
+                                <strong>Action B</strong><br><span style="font-size: 0.8rem; color: var(--text-secondary);">Sửa đổi A</span>
+                            </div>
+                        </div>
+                        <div style="text-align: center; color: var(--text-secondary); font-size: 1.2rem;">↓ APPLY_TO (depth = 1)</div>
+                        <div style="text-align: center;">
+                            <div class="card" style="display: inline-block; padding: 1rem; text-align: center; border-left: 3px solid var(--color-accent);">
+                                <strong>Component A</strong><br><span style="font-size: 0.8rem; color: var(--text-secondary);">Điều khoản gốc Luật A (Điểm tra cứu)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="color: var(--color-accent);">Cypher Query</h3>
+                <pre>MATCH path = (a:Action)-[:APPLY_TO|HAS_ACTION*1..6]->(c:Component {comp_id: $comp_id})
+OPTIONAL MATCH (a)-[:HAS_TEXTUNIT]->(t:TextUnit)
+RETURN a.amending_doc_number AS amending_doc,
+       a.relation_type AS action_type,
+       t.accumulated_text AS action_text,
+       t.unit_id AS unit_id,
+       length(path) AS depth
+ORDER BY depth ASC</pre>
+                <p style="font-size: 0.9rem;">• <code>depth = 1</code>: Sửa đổi trực tiếp &nbsp; • <code>depth = 3</code>: Sửa đổi bắc cầu &nbsp; • <code>ORDER BY depth ASC</code>: Từ cũ → mới</p>
+            </section>
+
+            <!-- PHẦN 6: CHANGELOG -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">6. Changelog — Lịch sử Điều chỉnh Tools</h2>
+
+                <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--color-success);">
+                    <div class="card-title">
+                        <span class="badge badge-success">16/07/2026</span>
+                        <span>search_legal_graph.py</span>
+                    </div>
+                    <table style="margin: 1rem 0 0 0;">
+                        <thead><tr><th style="width: 30%;">Hàm</th><th>Thay đổi</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><code>get_norm_relations</code></td>
+                                <td>Bổ sung đủ <strong>8 quan hệ Norm</strong>: thêm <code>SUPPLEMENTS</code>, <code>AMENDS</code>, <code>PARTIALLY_TERMINATES</code>, <code>TERMINATES</code>, <code>REFERS_TO</code>, <code>RELATED_TO</code> (trước đó chỉ có <code>CITES|IMPLEMENTS</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>get_component_actions</code></td>
+                                <td>
+                                    <strong>1.</strong> Sửa chiều quan hệ Cypher: từ <code>(Component)-[:HAS_ACTION]->(Action)</code> thành <code>(Action)-[:APPLY_TO]->(Component)</code>.<br>
+                                    <strong>2.</strong> Bổ sung duyệt đệ quy <code>[:APPLY_TO|HAS_ACTION*1..6]</code> để tìm chuỗi sửa đổi bắc cầu.<br>
+                                    <strong>3.</strong> Thêm trường <code>depth</code> vào kết quả trả về, sắp xếp theo <code>depth ASC</code>.<br>
+                                    <strong>4.</strong> Đọc <code>amending_doc_number</code> từ thuộc tính Action (thay vì qua quan hệ <code>[:BY_DOC]</code> không tồn tại).
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><code>get_component_context</code></td>
+                                <td>Sửa truy vấn Version: bỏ <code>{status: "active"}</code> (thuộc tính <code>status</code> không tồn tại trong DB). Giữ cơ chế fallback.</td>
+                            </tr>
+                            <tr>
+                                <td>Bảo vệ lỗi (try-except)</td>
+                                <td>Bao bọc tất cả 3 hàm trong khối <code>try-except</code>, trả về danh sách rỗng (hoặc dict rỗng) và log lỗi cụ thể để tránh làm crash LangGraph loop khi có sự cố CSDL.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--color-accent);">
+                    <div class="card-title">
+                        <span class="badge badge-indigo">16/07/2026</span>
+                        <span>search_vector_db.py</span>
+                    </div>
+                    <table style="margin: 1rem 0 0 0;">
+                        <thead><tr><th style="width: 30%;">Hạng mục</th><th>Thay đổi</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td>Bỏ trường thừa</td>
+                                <td>Loại bỏ trường <code>text</code> trùng lặp với <code>accumulated_text</code>. Thuộc tính <code>text</code> không tồn tại trên node TextUnit.</td>
+                            </tr>
+                            <tr>
+                                <td>JOIN Component/Norm</td>
+                                <td>Bổ sung <code>OPTIONAL MATCH</code> ngược lên <code>Component</code> và <code>Norm</code> để trả về thêm <code>citation</code>, <code>comp_id</code>, <code>norm_number</code>, <code>norm_type</code>. Sử dụng <code>CONTAINS*1..6</code> để duyệt qua cấu trúc Component phân cấp.</td>
+                            </tr>
+                            <tr>
+                                <td>Bảo vệ lỗi (try-except)</td>
+                                <td>Bao bọc toàn bộ logic trong khối <code>try-except</code>, in log lỗi và trả về danh sách rỗng an toàn nếu kết nối cơ sở dữ liệu Neo4j hoặc API sinh Embedding bị lỗi.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- PHẦN 7: LƯU Ý -->
+            <section style="margin-bottom: 3rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem;">7. Lưu ý Quan trọng cho Lập trình viên</h2>
+                <div class="card" style="border-left: 4px solid var(--color-warning);">
+                    <table style="margin: 0;">
+                        <thead><tr><th style="width: 35%;">Quy tắc</th><th>Chi tiết</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Nội dung văn bản</strong></td>
+                                <td>Luôn dùng <code>accumulated_text</code>. Không dùng <code>text</code> (không tồn tại trên TextUnit).</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Số hiệu văn bản</strong></td>
+                                <td>Luôn dùng <code>norm_number</code> trên node Norm. Không dùng <code>code</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Quan hệ sửa đổi</strong></td>
+                                <td>Sử dụng <code>Action -[:APPLY_TO]-> Component</code>. Không dùng <code>Component -[:HAS_ACTION]-> Action</code> để tìm điều khoản bị sửa đổi.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Node Version</strong></td>
+                                <td>Dữ liệu rất ít. Luôn kèm fallback về Component nếu Version rỗng.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tra cứu Norm từ Component</strong></td>
+                                <td>Dùng <code>Norm -[:CONTAINS*1..6]-> Component</code> thay vì <code>CONTAINS</code> đơn (Component có thể nằm sâu nhiều cấp).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</body>
+</html>
