@@ -13,8 +13,6 @@ SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
-SMTP_SIMULATION = os.getenv("SMTP_SIMULATION", "false").strip().lower() == "true"
-
 def send_email_action(
     recipient_email: str, 
     subject: str, 
@@ -23,8 +21,9 @@ def send_email_action(
 ) -> Dict[str, Any]:
     """Gửi email chứa báo cáo tư vấn. Tự động chuyển sang chế độ giả lập nếu thiếu cấu hình SMTP."""
     
-    # 1. Kiểm tra cấu hình môi trường
-    if SMTP_SIMULATION:
+    # 1. Kiểm tra cấu hình môi trường (đọc động để hỗ trợ thay đổi runtime)
+    smtp_simulation = os.getenv("SMTP_SIMULATION", "false").strip().lower() == "true"
+    if smtp_simulation:
         print(f"[SIMULATION] Email simulated successfully to: {recipient_email}")
         print(f"[SIMULATION] Subject: {subject}")
         print(f"[SIMULATION] Attachment: {attachment_path}")

@@ -36,7 +36,7 @@
                 <li class="nav-item">
                     <a href="tools-reference.html">
                         <span class="nav-icon">🛠️</span>
-                        <span>Chi tiết Hàm của Tools</span>
+                        <span>Chi tiết Tools & Skills</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -173,6 +173,10 @@
                                 <td><strong>Synthesis & Validation</strong></td>
                                 <td>Tổng hợp các kết quả lập luận để soạn thảo câu trả lời nháp, và đối chiếu chéo các trích dẫn pháp lý với nguồn gốc để chống hallucination.</td>
                             </tr>
+                            <tr>
+                                <td><strong>Direct Response Agent</strong></td>
+                                <td>Bypass Agent gọi LLM để phản hồi trực tiếp, thân thiện cho câu hỏi chitchat hoặc ngoài phạm vi nghiệp vụ pháp lý (out-of-scope). Hoạt động ở Tầng 2 thay vì Tầng 1 vì có sử dụng suy luận AI.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -248,10 +252,7 @@
                                 <td><code>send_email_action</code></td>
                                 <td>Gửi báo cáo kết quả tư vấn qua SMTP; chỉ chạy demo giả lập khi bật <code>SMTP_SIMULATION=true</code>.</td>
                             </tr>
-                            <tr>
-                                <td><code>answer_directly</code></td>
-                                <td>Bypass helper gọi LLM để phản hồi chitchat/out-of-scope; về kiến trúc nên đặt ở orchestrator node hơn là raw data tool.</td>
-                            </tr>
+
                         </tbody>
                     </table>
                 </div>
@@ -306,8 +307,8 @@
                     </tr>
                     <tr>
                         <td><strong>1.6b</strong></td>
-                        <td><code>tools/answer_directly.py</code> [Đã hoàn thành]</td>
-                        <td>Bypass helper trả lời trực tiếp cho chitchat/Out-of-Scope bằng LLM, tạm giữ trong tools để không phá import.</td>
+                        <td><code>agents/direct_response.py</code> [Đã hoàn thành → sẽ di chuyển]</td>
+                        <td>Direct Response Agent (Tầng 2): bypass phản hồi trực tiếp cho chitchat/Out-of-Scope bằng LLM. Hiện tạm giữ tại <code>tools/answer_directly.py</code>, sẽ di chuyển và refactor thành Agent khi triển khai Bước 3.</td>
                     </tr>
                     <tr>
                         <td><strong>1.6c</strong></td>
@@ -326,23 +327,23 @@
                     </tr>
                     <tr>
                         <td><strong>1.7</strong></td>
-                        <td><code>agents/base.py</code></td>
+                        <td><code>agents/base.py</code> [Đã hoàn thành]</td>
                         <td>Định nghĩa interface <code>BaseAgent</code> quy định Hợp đồng 4 phần cho mọi Sub-agent.</td>
                     </tr>
                     <tr>
                         <td><strong>1.8</strong></td>
-                        <td><code>skills/search_retrieval.py</code></td>
-                        <td>Skill tra cứu nghiệp vụ (kết hợp <code>search_vector_db</code>, <code>search_legal_graph</code>, <code>check_legal_status</code>, <code>web_search_mcp</code>).</td>
+                        <td><code>skills/search_retrieval.py</code> [Đã hoàn thành]</td>
+                        <td>Skill tra cứu nghiệp vụ: kết hợp CSDL Vector, kiểm tra hiệu lực văn bản và fallback Web Search. Có thêm cache tối ưu hóa và trả về comp_id.</td>
                     </tr>
                     <tr>
                         <td><strong>1.9</strong></td>
-                        <td><code>skills/analysis.py</code></td>
-                        <td>Skill đọc hiểu và trích xuất sâu điều/khoản/điểm (<code>search_legal_graph</code> component actions, <code>read_document_chunk</code>).</td>
+                        <td><code>skills/analysis.py</code> [Đã hoàn thành]</td>
+                        <td>Skill đọc hiểu và trích xuất sâu điều/khoản/điểm: duyệt đệ quy chuỗi sửa đổi (Action) và đọc tài liệu đính kèm.</td>
                     </tr>
                     <tr>
                         <td><strong>1.10</strong></td>
-                        <td><code>skills/reporting.py</code></td>
-                        <td>Skill kiểm chứng trích dẫn, định dạng báo cáo và hành động đầu ra (<code>validate_citations</code>, <code>generate_report</code>, <code>send_email_action</code>).</td>
+                        <td><code>skills/reporting.py</code> [Đã hoàn thành]</td>
+                        <td>Skill kiểm chứng trích dẫn, định dạng báo cáo (Strategy Pattern) và gửi email báo cáo (SMTP).</td>
                     </tr>
                     <tr>
                         <td><strong>1.11</strong></td>
@@ -375,7 +376,7 @@
                     <div class="timeline-content">
                         • <code>orchestrator.py</code>: Coordinator Agent thực hiện Intent Classification, Effort-Scaling, Routing và Payload Pruning.<br>
                         • <code>graph.py</code>: Định nghĩa StateGraph LangGraph kết nối các nodes và cấu hình conditional edges (fan-out song song).<br>
-                        • <code>tools/answer_directly.py</code>: Tool bypass phản hồi nhanh cho câu hỏi chitchat/out-of-scope.<br>
+                        • <code>agents/direct_response.py</code>: Direct Response Agent (Tầng 2) xử lý bypass phản hồi nhanh cho câu hỏi chitchat/out-of-scope bằng LLM.<br>
                         • <code>Clarification Gate</code>: Thiết lập cơ chế hỏi lại ở Coordinator khi confidence_score &lt; 0.75.
                     </div>
                 </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tài liệu Chi tiết Hàm & Truy vấn của Tools</title>
+    <title>Tài liệu Chi tiết Hàm của Tools & Skills</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -36,7 +36,7 @@
                 <li class="nav-item active">
                     <a href="tools-reference.html">
                         <span class="nav-icon">🛠️</span>
-                        <span>Chi tiết Hàm của Tools</span>
+                        <span>Chi tiết Tools & Skills</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -52,8 +52,8 @@
         <main class="main-content">
             <header style="text-align: center; margin-bottom: 3rem;">
                 <div class="badge badge-indigo" style="margin-bottom: 1rem;">Tài liệu Kỹ thuật</div>
-                <h1 style="font-size: 2.5rem; margin-bottom: 0.75rem;">Chi tiết Hàm & Truy vấn của Tools</h1>
-                <p class="subtitle" style="font-size: 1.15rem;">Báo cáo chi tiết cấu trúc mã nguồn, tham số đầu vào/đầu ra và giải thích truy vấn Cypher cho từng hàm trong lớp công cụ.</p>
+                <h1 style="font-size: 2.5rem; margin-bottom: 0.75rem;">Chi tiết Hàm của Tools & Skills</h1>
+                <p class="subtitle" style="font-size: 1.15rem;">Báo cáo chi tiết cấu trúc mã nguồn, tham số đầu vào/đầu ra, thuật toán và giải thích logic cho từng hàm trong lớp công cụ (Tools) và lớp kỹ năng nghiệp vụ (Skills).</p>
             </header>
 
             <!-- SECTION 1: SEARCH_VECTOR_DB -->
@@ -522,6 +522,88 @@ LIMIT 1</pre>
                     <p style="color: var(--text-secondary); line-height: 1.8;">
                         Hàm bao bọc lời gọi sinh văn bản của mô hình bằng khối <code>try-except</code>. Nếu gặp sự cố mất kết nối mạng hoặc lỗi API Key, hàm tự động trả về một câu phản hồi chào hỏi mặc định an toàn: <code>"Xin chào! Tôi có thể giúp gì cho bạn về các vấn đề pháp luật Việt Nam (Thuế, Đất đai...) hôm nay?..."</code> kèm thông tin chi tiết mã lỗi để không làm gián đoạn trải nghiệm người dùng.
                     </p>
+                </div>
+            </section>
+
+            <!-- SECTION 10: SKILLS REFERENCE -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-success);">10. Lớp Nghiệp vụ Kỹ năng (Skills)</h2>
+                <p>Nằm tại thư mục: <code>skills/</code>. Lớp này đóng gói quy trình gọi các công cụ thô (Tools) ở Tầng 1 và xử lý làm sạch dữ liệu trung gian trước khi cung cấp cho các tác nhân lập luận (Agents) ở Tầng 2.</p>
+
+                <!-- SKILL 1: LEGAL SEARCH & RETRIEVAL -->
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-success);">
+                    <h3 style="color: #fff; margin-top: 0;">10.1. Kỹ năng: <code>skills/search_retrieval.py</code></h3>
+                    <p style="margin-top: 0.5rem;"><strong>Chức năng:</strong> Đóng gói luồng tra cứu luật đa chiều, kiểm tra hiệu lực thực tế và tự động tìm kiếm bổ trợ trên web nếu CSDL Neo4j GraphRAG thiếu dữ liệu.</p>
+                    
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Hàm thực thi chính:</strong> <code>execute_search_retrieval(query_text, provider, limit)</code></li>
+                        <li><strong>Quy trình xử lý (Pipeline):</strong>
+                            <ol>
+                                <li>Gọi <code>search_vector_db</code> để thực hiện tìm kiếm ngữ nghĩa, thu thập các node TextUnit thô và JOIN ngược lấy <code>comp_id</code>, <code>norm_number</code>.</li>
+                                <li>Nếu số lượng kết quả thu được nhỏ hơn <code>limit</code>, tự động gọi <code>web_search_mcp</code> làm fallback để lấy thêm các đoạn thông tin trên internet.</li>
+                                <li>Duyệt qua danh sách văn bản và gọi <code>check_legal_status</code> để xác định hiệu lực pháp lý (còn/hết hiệu lực, các tài liệu thay thế/sửa đổi). Sử dụng <strong>cơ chế cache</strong> theo <code>norm_number</code> để tránh gọi DB trùng lặp hiệu năng cao.</li>
+                            </ol>
+                        </li>
+                        <li><strong>Tham số đầu vào:</strong>
+                            <ul>
+                                <li><code>query_text</code> (str): Câu truy vấn của người dùng.</li>
+                                <li><code>provider</code> (str): Provider của LLM để sinh embedding.</li>
+                                <li><code>limit</code> (int): Giới hạn số lượng kết quả cần lấy.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Tham số đầu ra:</strong> Danh sách kết quả sạch dạng Dict chứa đầy đủ thông tin: <code>unit_id</code>, <code>comp_id</code>, <code>accumulated_text</code>, <code>citation</code>, <code>norm_number</code>, <code>norm_type</code>, <code>score</code>, <code>source</code>, <code>validity_status</code>, <code>amended_by</code>, <code>terminated_by</code>.</li>
+                    </ul>
+                </div>
+
+                <!-- SKILL 2: DEEP ANALYSIS & EXTRACTION -->
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-success);">
+                    <h3 style="color: #fff; margin-top: 0;">10.2. Kỹ năng: <code>skills/analysis.py</code></h3>
+                    <p style="margin-top: 0.5rem;"><strong>Chức năng:</strong> Nghiên cứu sâu ngữ cảnh của một điều luật cụ thể, truy vết đệ quy chuỗi sửa đổi pháp lý và hỗ trợ tích hợp nội dung tài liệu do người dùng tải lên.</p>
+                    
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Hàm thực thi chính:</strong> <code>execute_deep_analysis(comp_id, file_path, chunk_index, chunk_size)</code></li>
+                        <li><strong>Quy trình xử lý (Pipeline):</strong>
+                            <ol>
+                                <li>Gọi <code>get_component_context</code> lấy thông tin tiêu đề, cấp bậc điều khoản và văn bản luật gốc.</li>
+                                <li>Gọi <code>get_component_actions</code> để duyệt đệ quy tìm các tài liệu sửa đổi/bãi bỏ liên quan trực tiếp và bắc cầu, hoặc tìm các điều luật dẫn chiếu chéo (REFERS_TO).</li>
+                                <li>Nếu người dùng cung cấp <code>file_path</code>, gọi <code>read_document_chunk</code> để đọc phân đoạn thông tin bổ sung và đính kèm vào ngữ cảnh.</li>
+                            </ol>
+                        </li>
+                        <li><strong>Tham số đầu vào:</strong>
+                            <ul>
+                                <li><code>comp_id</code> (str): ID duy nhất của điều khoản (Component).</li>
+                                <li><code>file_path</code> (str, optional): Đường dẫn tệp đính kèm người dùng tải lên.</li>
+                                <li><code>chunk_index</code> (int): Phân đoạn cần đọc của tệp đính kèm.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Tham số đầu ra:</strong> Dictionary chứa ngữ cảnh hoàn chỉnh: <code>comp_id</code>, <code>norm_context</code>, <code>component_details</code>, <code>modifications</code>, <code>additional_document</code>, <code>error</code>.</li>
+                    </ul>
+                </div>
+
+                <!-- SKILL 3: REPORTING & ACTION -->
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-success);">
+                    <h3 style="color: #fff; margin-top: 0;">10.3. Kỹ năng: <code>skills/reporting.py</code></h3>
+                    <p style="margin-top: 0.5rem;"><strong>Chức năng:</strong> Đóng gói quy trình kiểm chứng chéo các trích dẫn chống ảo tưởng, tự động format báo cáo và kích hoạt gửi SMTP email hành động.</p>
+                    
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Hàm thực thi chính:</strong> <code>execute_reporting_and_validation(draft_answer, raw_data, provider, format_type, recipient_email, email_subject)</code></li>
+                        <li><strong>Quy trình xử lý (Pipeline):</strong>
+                            <ol>
+                                <li>Gọi <code>validate_citations</code> để trích xuất các trích dẫn dạng <code>[Văn bản - Điều khoản]</code> trong bản nháp, đối chiếu với Neo4j và sinh cosine similarity kiểm tra độ lệch nghĩa.</li>
+                                <li>Tổng hợp thông tin thô từ <code>raw_data</code> và danh sách trích dẫn đã xác thực để gọi <code>generate_report</code> xuất báo cáo theo định dạng yêu cầu (Markdown/HTML).</li>
+                                <li>Nếu có địa chỉ email người nhận (<code>recipient_email</code>), gọi <code>send_email_action</code> để thực hiện gửi email báo cáo (hỗ trợ chế độ simulation an toàn).</li>
+                            </ol>
+                        </li>
+                        <li><strong>Tham số đầu vào:</strong>
+                            <ul>
+                                <li><code>draft_answer</code> (str): Nội dung câu trả lời nháp do Agent soạn thảo.</li>
+                                <li><code>raw_data</code> (Dict): Dữ liệu phân tích gốc.</li>
+                                <li><code>format_type</code> (str): Định dạng mong muốn (markdown/html).</li>
+                                <li><code>recipient_email</code> (str, optional): Email người nhận.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Tham số đầu ra:</strong> Dictionary kết quả: <code>verified_citations</code> (danh sách trích dẫn kèm trạng thái exists/valid), <code>report_content</code> (báo cáo đã được format), <code>email_status</code> (kết quả gửi SMTP), <code>error</code>.</li>
+                    </ul>
                 </div>
             </section>
         </main>
