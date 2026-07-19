@@ -1,4 +1,6 @@
-# Chức năng: Tạo phản hồi trực tiếp cho các câu hỏi chitchat, chào hỏi hoặc ngoài phạm vi nghiệp vụ bằng LLM.
+# Chức năng: Helper bypass tạo phản hồi trực tiếp cho chitchat hoặc câu hỏi ngoài phạm vi nghiệp vụ bằng LLM.
+
+# Lưu ý kiến trúc: hàm này gọi LLM nên phù hợp làm bypass node/helper ở tầng orchestrator hơn là raw data tool.
 
 from typing import Optional
 from config import (

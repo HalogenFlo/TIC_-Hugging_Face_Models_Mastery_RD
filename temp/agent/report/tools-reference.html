@@ -199,7 +199,7 @@ RETURN target.comp_id AS target_comp_id,
 
                     <h4 style="color: #fff;">Truy vấn Cypher thực tế:</h4>
                     <pre># 1. Lấy văn bản gốc chứa Component
-MATCH (n:Norm)-[:CONTAINS]->(c:Component {comp_id: $comp_id})
+MATCH (n:Norm)-[:CONTAINS*1..6]->(c:Component {comp_id: $comp_id})
 RETURN n.norm_number AS code, n.norm_type AS type LIMIT 1
 
 # 2a. Thử tìm qua Version (Nâng cao)
@@ -249,6 +249,7 @@ RETURN c.title_text AS title, c.citation AS citation, c.level AS level LIMIT 1</
                                 <li><code>title</code> (str): Tiêu đề của trang kết quả tìm kiếm.</li>
                                 <li><code>link</code> (str): Đường dẫn liên kết nguồn (URL).</li>
                                 <li><code>snippet</code> (str): Nội dung tóm tắt ngắn từ trang web.</li>
+                                <li><code>trusted</code> (bool): Trạng thái xác định kết quả thuộc tập tên miền tin cậy hay không.</li>
                             </ul>
                         </li>
                         <li><strong>Cấu hình Proxy (Tùy chọn):</strong>
@@ -267,8 +268,263 @@ RETURN c.title_text AS title, c.citation AS citation, c.level AS level LIMIT 1</
                     </ol>
                 </div>
             </section>
+
+            <!-- SECTION 4: CHECK_LEGAL_STATUS -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-accent);">4. Tool: check_legal_status.py</h2>
+                <p>Nằm tại đường dẫn: <code>tools/check_legal_status.py</code>. Tệp tin này kiểm tra trạng thái hiệu lực pháp lý thực tế của một văn bản pháp luật (Norm) từ Neo4j, đồng thời tìm các văn bản sửa đổi/bãi bỏ liên quan.</p>
+
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-accent);">
+                    <h3 style="color: #fff; margin-top: 0;">Hàm: <code>check_legal_status(code)</code></h3>
+                    <p style="margin-top: 0.5rem;"><strong>Chức năng:</strong> Nhận số hiệu văn bản (code), thực hiện truy vấn Neo4j để lấy trạng thái hiệu lực hiện tại, danh sách văn bản bãi bỏ/thế chỗ (TERMINATES/PARTIALLY_TERMINATES) và sửa đổi/bổ sung (AMENDS/SUPPLEMENTS).</p>
+                    
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                        <li><strong>Tham số đầu vào:</strong>
+                            <ul>
+                                <li><code>code</code> (str): Số hiệu văn bản luật cần kiểm tra (ví dụ: "65/2013/NĐ-CP").</li>
+                            </ul>
+                        </li>
+                        <li><strong>Dữ liệu trả về (Output Schema):</strong> Dictionary chứa:
+                            <ul>
+                                <li><code>code</code> (str): Số hiệu văn bản kiểm tra.</li>
+                                <li><code>exists</code> (bool): Xác định văn bản có tồn tại trong CSDL hay không.</li>
+                                <li><code>type</code> (str): Loại văn bản (Nghị định, Luật, Thông tư...).</li>
+                                <li><code>validity_status</code> (str): Trạng thái hiệu lực (Còn hiệu lực, Hết hiệu lực...).</li>
+                                <li><code>terminated_by</code> (List[Dict]): Danh sách văn bản bãi bỏ hoàn toàn/một phần.</li>
+                                <li><code>amended_by</code> (List[Dict]): Danh sách văn bản sửa đổi/bổ sung.</li>
+                                <li><code>error</code> (str hoặc None): Chi tiết thông báo lỗi nếu xảy ra sự cố truy vấn CSDL.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4 style="color: #fff;">Các câu truy vấn Cypher:</h4>
+                    <pre># 1. Trạng thái cơ bản
+MATCH (n:Norm) WHERE n.norm_number = $code
+RETURN n.norm_number AS code, n.norm_type AS type, n.validity_status AS validity_status LIMIT 1
+
+# 2. Các văn bản bãi bỏ
+MATCH (n:Norm) WHERE n.norm_number = $code
+MATCH (terminator:Norm)-[r:TERMINATES|PARTIALLY_TERMINATES]->(n)
+RETURN terminator.norm_number AS code, terminator.norm_type AS type, type(r) AS rel_type
+
+# 3. Các văn bản sửa đổi, bổ sung
+MATCH (n:Norm) WHERE n.norm_number = $code
+MATCH (amender:Norm)-[r:AMENDS|SUPPLEMENTS]->(n)
+RETURN amender.norm_number AS code, amender.norm_type AS type, type(r) AS rel_type</pre>
+
+                    <h4 style="color: #fff; margin-top: 1.5rem;">Cập nhật mới (Changelog):</h4>
+                    <p style="color: var(--text-secondary); line-height: 1.8;">
+                        <strong>Bảo vệ lỗi toàn diện (try-except):</strong> Toàn bộ logic kết nối và truy vấn CSDL được bao bọc trong khối <code>try-except</code> để trả về dictionary trạng thái mặc định an toàn khi có sự cố kết nối Neo4j, tránh gây crash cho AgentStateGraph. Trường <code>error</code> được bổ sung để truyền đạt lỗi cụ thể.
+                    </p>
+                </div>
+            </section>
+
+            <!-- SECTION 5: VALIDATE_CITATIONS -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-success);">5. Tool: validate_citations.py</h2>
+                <p>Nằm tại đường dẫn: <code>tools/validate_citations.py</code>. Tệp tin này dùng để đối chiếu và kiểm chứng độ chính xác của các trích dẫn pháp luật trong câu trả lời dự thảo của Agent với nội dung gốc trong CSDL Neo4j bằng Cosine Similarity, chống ảo tưởng (hallucination).</p>
+
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-success);">
+                    <h3 style="color: #fff; margin-top: 0;">Hàm: <code>validate_citations(draft_answer, provider)</code></h3>
+                    <p style="margin-top: 0.5rem;"><strong>Chức năng:</strong> Trích xuất các trích dẫn dạng <code>[Văn bản - Điều khoản]</code> bằng Regex, truy vấn Neo4j lấy văn bản gốc, sinh Vector Embedding cho ngữ cảnh của trích dẫn và nội dung gốc để so khớp độ tương đồng Cosine.</p>
+                    
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                        <li><strong>Tham số đầu vào:</strong>
+                            <ul>
+                                <li><code>draft_answer</code> (str): Phản hồi dự thảo chứa các trích dẫn cần kiểm chứng.</li>
+                                <li><code>provider</code> (str): OpenAI hoặc Gemini để chọn mô hình sinh embedding tương ứng.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Dữ liệu trả về (Output Schema):</strong> Danh sách các kết quả kiểm chứng trích dẫn gồm:
+                            <ul>
+                                <li><code>raw_citation</code> (str): Chuỗi trích dẫn thô khớp được (VD: <code>[65/2013/NĐ-CP - Điều 12]</code>).</li>
+                                <li><code>exists</code> (bool): Xác định văn bản và điều khoản trích dẫn có tồn tại trong CSDL hay không.</li>
+                                <li><code>valid</code> (bool): Xác định trích dẫn có hợp lệ hay không (phản ánh việc tìm thấy đúng văn bản và điều khoản trong CSDL).</li>
+                                <li><code>score</code> (float): Điểm tương đồng Cosine (0.0 -> 1.0).</li>
+                                <li><code>correct_text</code> (str): Nội dung điều khoản gốc trong CSDL để đối chiếu.</li>
+                                <li><code>reason</code> (str): Lý do chi tiết trích dẫn chính xác hoặc bị sai lệch, hoặc lỗi.</li>
+                                <li><code>error</code> (str hoặc None): Chi tiết thông báo lỗi nếu xảy ra sự cố trong quá trình sinh embedding hoặc kết nối DB.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4 style="color: #fff;">Truy vấn Cypher thực tế:</h4>
+                    <pre>MATCH (n:Norm) WHERE n.norm_number = $norm_code
+MATCH (n)-[:CONTAINS*1..6]->(c:Component)
+WHERE c.citation = $citation_name
+OPTIONAL MATCH (c)-[:HAS_TEXTUNIT]->(t:TextUnit)
+RETURN c.comp_id AS comp_id, 
+       t.accumulated_text AS text, 
+       t.accumulated_text AS accumulated_text, 
+       t.embedding AS embedding
+LIMIT 1</pre>
+
+                    <h4 style="color: #fff; margin-top: 1.5rem;">Cập nhật mới (Changelog):</h4>
+                    <ul style="padding-left: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Sửa lỗi truy vấn phân cấp (Hierarchical Fix):</strong> Thay đổi mối quan hệ MATCH Component từ <code>[:CONTAINS]</code> đơn tầng thành <code>[:CONTAINS*1..6]</code> để đi xuyên qua cấu trúc Chương, Mục, Điều khoản nằm sâu trong văn bản luật gốc.</li>
+                        <li><strong>Bảo vệ lỗi kết nối (try-except):</strong> Bao bọc toàn bộ phiên làm việc của Neo4j và logic DB trong khối <code>try-except</code> để trả về kết quả không hợp lệ kèm lý do lỗi kết nối thay vì làm sập luồng LangGraph.</li>
+                        <li><strong>Thay đổi ý nghĩa trường valid:</strong> Trường <code>valid</code> hiện phản ánh trực tiếp trạng thái tìm thấy văn bản và điều khoản trong CSDL, trong khi điểm số tương đồng Cosine chỉ là tín hiệu tham khảo để phát hiện diễn giải sai nghĩa.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 6: READ_DOCUMENT_CHUNK -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-warning);">6. Tool: read_document_chunk.py</h2>
+                <p>Nằm tại đường dẫn: <code>tools/read_document_chunk.py</code>. Tệp tin này chịu trách nhiệm đọc và phân mảnh nội dung tệp tài liệu pháp lý (PDF, Word, Text) để tránh làm phình ngữ cảnh của LLM.</p>
+
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-warning);">
+                    <h3 style="color: #fff; margin-top: 0;">Hàm: <code>read_document_chunk(file_path, chunk_index, chunk_size)</code></h3>
+                    <p style="margin-top: 0.5rem;"><strong>Chức năng:</strong> Đọc tệp tin tài liệu dựa trên phần mở rộng, phân mảnh văn bản theo kích thước ký tự và trích xuất mảnh dữ liệu tại vị trí chỉ định.</p>
+                    
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                        <li><strong>Tham số đầu vào:</strong>
+                            <ul>
+                                <li><code>file_path</code> (str): Đường dẫn tuyệt đối hoặc tương đối đến tệp tài liệu.</li>
+                                <li><code>chunk_index</code> (int, mặc định = 0): Vị trí mảnh cần đọc (0-indexed).</li>
+                                <li><code>chunk_size</code> (int, mặc định = 2000): Kích thước ký tự tối đa của mảnh văn bản.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Các định dạng hỗ trợ:</strong>
+                            <ul>
+                                <li><code>.txt</code>: Đọc tệp tin văn bản thuần qua hàm hỗ trợ <code>read_text_file(file_path)</code>.</li>
+                                <li><code>.docx</code>: Đọc tệp Word qua hàm <code>read_docx_file(file_path)</code> (sử dụng thư viện <code>python-docx</code>).</li>
+                                <li><code>.pdf</code>: Đọc tệp PDF qua hàm <code>read_pdf_file(file_path)</code> (sử dụng thư viện <code>pypdf</code>).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Dữ liệu trả về (Output Schema):</strong> Dictionary chứa:
+                            <ul>
+                                <li><code>file_name</code> (str): Tên tệp tin thô được trích xuất từ đường dẫn.</li>
+                                <li><code>chunk_text</code> (str): Nội dung văn bản của mảnh hiện tại.</li>
+                                <li><code>chunk_index</code> (int): Chỉ số mảnh thực tế được trả về (sau khi kiểm tra biên).</li>
+                                <li><code>total_chunks</code> (int): Tổng số phân mảnh được tính toán dựa trên kích thước tệp.</li>
+                                <li><code>total_characters</code> (int): Tổng độ dài ký tự của văn bản gốc trong tài liệu.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4 style="color: #fff; margin-top: 1.5rem;">Bảo vệ lỗi và Các ràng buộc:</h4>
+                    <ul style="padding-left: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Ràng buộc kích thước:</strong> Hàm ném ra lỗi <code>ValueError("chunk_size phải lớn hơn 0.")</code> nếu tham số kích thước không hợp lệ.</li>
+                        <li><strong>Kiểm tra tồn tại:</strong> Ném lỗi <code>FileNotFoundError</code> nếu đường dẫn tệp tin không tồn tại.</li>
+                        <li><strong>Định dạng không hỗ trợ:</strong> Ném lỗi <code>ValueError</code> nếu định dạng tệp tin khác .txt, .docx, .pdf.</li>
+                        <li><strong>Bảo vệ vượt biên:</strong> Tự động điều chỉnh <code>chunk_index</code> về <code>0</code> nếu nhỏ hơn 0, hoặc về mảnh cuối cùng <code>total_chunks - 1</code> nếu vượt quá tổng số mảnh thực tế.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 7: GENERATE_REPORT -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-accent);">7. Tool: generate_report.py</h2>
+                <p>Nằm tại đường dẫn: <code>tools/generate_report.py</code>. Tệp tin này định nghĩa Strategy Pattern để xuất bản báo cáo tư vấn pháp lý dưới nhiều định dạng khác nhau.</p>
+
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-accent);">
+                    <h3 style="color: #fff; margin-top: 0;">Hàm: <code>generate_report(data, format_type)</code></h3>
+                    <p style="margin-top: 0.5rem;"><strong>Chức năng:</strong> Hàm wrapper nhận dữ liệu tư vấn đã hoàn chỉnh và áp dụng formatter tương ứng với kiểu định dạng yêu cầu để xuất ra chuỗi báo cáo.</p>
+                    
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                        <li><strong>Tham số đầu vào:</strong>
+                            <ul>
+                                <li><code>data</code> (Dict[str, Any]): Dữ liệu báo cáo chứa các cấu trúc: <code>query</code>, <code>summary</code>, <code>details</code> (danh sách phân tích chi tiết), <code>conflicts</code> (danh sách xung đột) và <code>citations</code> (danh sách trích dẫn).</li>
+                                <li><code>format_type</code> (str, mặc định = "markdown"): Kiểu định dạng xuất báo cáo (chấp nhận <code>markdown</code>, <code>md</code>, <code>html</code>).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Cấu trúc thiết kế (Strategy Pattern):</strong>
+                            <ul>
+                                <li><code>BaseReportFormatter</code>: Lớp cơ sở trừu tượng quy định giao diện <code>format(data)</code>.</li>
+                                <li><code>MarkdownFormatter</code>: Định dạng dữ liệu thành chuỗi Markdown tiêu chuẩn, có định dạng rõ ràng, thụt dòng blockquote cho trích dẫn nguồn.</li>
+                                <li><code>HTMLFormatter</code>: Định dạng thành tài liệu HTML5 hoàn chỉnh tích hợp sẵn CSS nội bộ (Inline CSS) với màu sắc chủ đạo đồng nhất, khối cảnh báo xung đột nổi bật.</li>
+                                <li><code>PDFFormatter</code> & <code>ExcelFormatter</code>: Đã được định nghĩa lớp nhưng ném ra <code>NotImplementedError</code> để chờ triển khai nâng rộng.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Dữ liệu trả về (Output Schema):</strong> Chuỗi văn bản (string) đã được định dạng tương ứng với style được lựa chọn.</li>
+                    </ul>
+
+                    <h4 style="color: #fff; margin-top: 1.5rem;">Bảo vệ lỗi:</h4>
+                    <p style="color: var(--text-secondary); line-height: 1.8;">
+                        Hàm wrapper tự động kiểm tra loại định dạng đầu vào. Nếu <code>format_type</code> không được hỗ trợ trong danh mục (ví dụ chọn <code>pdf</code> hoặc <code>excel</code> hiện tại), hàm sẽ ném ra lỗi <code>ValueError</code> kèm thông điệp hướng dẫn rõ ràng: <code>"Không hỗ trợ định dạng báo cáo: {format_type}. Hiện chỉ hỗ trợ: markdown, md, html."</code>.
+                    </p>
+                </div>
+            </section>
+
+            <!-- SECTION 8: SEND_EMAIL_ACTION -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-success);">8. Tool: send_email_action.py</h2>
+                <p>Nằm tại đường dẫn: <code>tools/send_email_action.py</code>. Tệp tin này thực hiện tác vụ gửi email báo cáo kết quả tư vấn pháp lý cho người dùng thông qua giao thức SMTP bảo mật.</p>
+
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-success);">
+                    <h3 style="color: #fff; margin-top: 0;">Hàm: <code>send_email_action(recipient_email, subject, body_text, attachment_path)</code></h3>
+                    <p style="margin-top: 0.5rem;"><strong>Chức năng:</strong> Đóng gói nội dung email dưới dạng <code>MIMEMultipart</code>, đính kèm tệp tin báo cáo (nếu có), thực hiện bắt tay TLS và đăng nhập SMTP Server để gửi thư đi.</p>
+                    
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                        <li><strong>Tham số đầu vào:</strong>
+                            <ul>
+                                <li><code>recipient_email</code> (str): Địa chỉ email của người nhận.</li>
+                                <li><code>subject</code> (str): Tiêu đề thư.</li>
+                                <li><code>body_text</code> (str): Nội dung văn bản thuần của email.</li>
+                                <li><code>attachment_path</code> (str, tùy chọn): Đường dẫn tệp tin đính kèm.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Cấu hình môi trường sử dụng:</strong>
+                            <ul>
+                                <li><code>SMTP_SERVER</code> (mặc định: <code>smtp.gmail.com</code>)</li>
+                                <li><code>SMTP_PORT</code> (mặc định: <code>587</code>)</li>
+                                <li><code>SMTP_USERNAME</code> & <code>SMTP_PASSWORD</code>: Thông tin tài khoản gửi email.</li>
+                                <li><code>SMTP_SIMULATION</code> (bool): Đọc từ biến môi trường. Nếu được đặt thành <code>true</code>, hệ thống tự động chạy chế độ giả lập để kiểm thử luồng mà không cần kết nối mạng.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Dữ liệu trả về (Output Schema):</strong> Dictionary chứa:
+                            <ul>
+                                <li><code>status</code> (str): Trạng thái gửi (<code>sent</code> | <code>simulated</code> | <code>failed</code>).</li>
+                                <li><code>message</code> (str): Thông báo mô tả kết quả chi tiết.</li>
+                                <li><code>recipient</code> (str): Email người nhận.</li>
+                                <li><code>subject</code> (str): Tiêu đề thư đã xử lý.</li>
+                                <li><code>attachment</code> (str, tùy chọn): Đường dẫn tệp tin đính kèm nếu có.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4 style="color: #fff; margin-top: 1.5rem;">Cơ chế xử lý lỗi và Giả lập an toàn:</h4>
+                    <ol style="padding-left: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Chế độ giả lập:</strong> Khi biến <code>SMTP_SIMULATION=true</code> được cấu hình, hàm tự động in thông tin log giả lập ra console và trả về status <code>"simulated"</code> ngay lập tức.</li>
+                        <li><strong>Thiếu cấu hình SMTP:</strong> Nếu không ở chế độ giả lập nhưng thiếu cấu hình username/password SMTP, hệ thống in log lỗi và trả về status <code>"failed"</code> hướng dẫn đặt <code>SMTP_SIMULATION=true</code> để chạy thử nghiệm.</li>
+                        <li><strong>Lỗi đính kèm file:</strong> Bao bọc logic đọc và mã hóa Base64 tệp đính kèm trong khối <code>try-except</code> riêng. Nếu tệp lỗi hoặc không tìm thấy, hệ thống in cảnh báo <code>"Cannot attach file"</code> nhưng **vẫn tiếp tục gửi email** phần nội dung chữ đi thay vì làm hỏng toàn bộ luồng gửi.</li>
+                        <li><strong>Bảo vệ lỗi SMTP:</strong> Toàn bộ quá trình kết nối và gửi thư qua <code>smtplib</code> được bảo vệ bằng try-except, tự động bắt lỗi ghi log và trả về status <code>"failed"</code> cùng lý do cụ thể, tránh làm crash AgentStateGraph.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- SECTION 9: ANSWER_DIRECTLY -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-warning);">9. Tool: answer_directly.py</h2>
+                <p>Nằm tại đường dẫn: <code>tools/answer_directly.py</code>. Đây là helper bypass tạo phản hồi trực tiếp bằng LLM dành cho các câu hỏi mang tính chất giao tiếp xã giao (chitchat) hoặc ngoài phạm vi nghiệp vụ pháp lý.</p>
+
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-warning);">
+                    <h3 style="color: #fff; margin-top: 0;">Hàm: <code>answer_directly(query, provider)</code></h3>
+                    <p style="margin-top: 0.5rem;"><strong>Chức năng:</strong> Xác định mô hình điều phối tương ứng với nhà cung cấp (Gemini hoặc GPT), thiết lập system instruction định hướng lịch sự để trả lời trực tiếp cho người dùng.</p>
+                    
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                        <li><strong>Tham số đầu vào:</strong>
+                            <ul>
+                                <li><code>query</code> (str): Đoạn chat giao tiếp thô của người dùng.</li>
+                                <li><code>provider</code> (str): Nhà cung cấp mô hình AI (OpenAI hoặc Gemini).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Nguyên tắc định hướng (System Instruction):</strong>
+                            <p style="font-size: 0.9rem; font-style: italic; color: var(--text-secondary); margin-top: 0.25rem;">
+                                "Bạn là một trợ lý ảo thông minh chuyên về tư vấn pháp luật Việt Nam (như luật Thuế, luật Đất đai). Người dùng hiện tại đang chào hỏi hoặc chitchat/nói chuyện ngoài lề không liên quan đến pháp luật. Hãy phản hồi một cách ngắn gọn, thân thiện, lịch sự và tinh tế hướng người dùng đặt các câu hỏi liên quan đến lĩnh vực tư vấn pháp lý Việt Nam."
+                            </p>
+                        </li>
+                        <li><strong>Dữ liệu trả về (Output Schema):</strong> Chuỗi văn bản phản hồi (string) thân thiện, ngắn gọn do LLM tạo ra.</li>
+                    </ul>
+
+                    <h4 style="color: #fff; margin-top: 1.5rem;">Bảo vệ lỗi (Robustness):</h4>
+                    <p style="color: var(--text-secondary); line-height: 1.8;">
+                        Hàm bao bọc lời gọi sinh văn bản của mô hình bằng khối <code>try-except</code>. Nếu gặp sự cố mất kết nối mạng hoặc lỗi API Key, hàm tự động trả về một câu phản hồi chào hỏi mặc định an toàn: <code>"Xin chào! Tôi có thể giúp gì cho bạn về các vấn đề pháp luật Việt Nam (Thuế, Đất đai...) hôm nay?..."</code> kèm thông tin chi tiết mã lỗi để không làm gián đoạn trải nghiệm người dùng.
+                    </p>
+                </div>
+            </section>
         </main>
     </div>
 </body>
 </html>
-

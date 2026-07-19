@@ -147,13 +147,10 @@ def generate_report(data: Dict[str, Any], format_type: str = "markdown") -> str:
         "markdown": MarkdownFormatter(),
         "md": MarkdownFormatter(),
         "html": HTMLFormatter(),
-        "pdf": PDFFormatter(),
-        "excel": ExcelFormatter(),
-        "xlsx": ExcelFormatter(),
     }
     
     formatter = formatters.get(format_type)
     if not formatter:
-        raise ValueError(f"Không hỗ trợ định dạng báo cáo: {format_type}")
+        raise ValueError("Không hỗ trợ định dạng báo cáo: {0}. Hiện chỉ hỗ trợ: markdown, md, html.".format(format_type))
         
     return formatter.format(data)

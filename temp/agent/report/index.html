@@ -222,35 +222,35 @@
                             </tr>
                             <tr>
                                 <td><code>web_search_mcp</code></td>
-                                <td>Tìm kiếm thông tin pháp luật trực tuyến bổ trợ trên Internet qua DuckDuckGo Search.</td>
+                                <td>Tìm kiếm thông tin pháp luật trực tuyến bổ trợ trên Internet qua Tavily Search API, có đánh dấu <code>trusted</code> để phân biệt nguồn tin cậy và fallback search tự do.</td>
                             </tr>
                             <tr>
                                 <td><code>search_legal_graph</code></td>
-                                <td>Truy vấn và duyệt đồ thị Neo4j GraphRAG để tìm mối quan hệ liên kết chéo giữa các điều luật. <strong>(Đã cập nhật: Đồng bộ sử dụng <code>norm_number</code> và các quan hệ <code>CITES|IMPLEMENTS|REFERS_TO</code> thực tế)</strong></td>
+                                <td>Truy vấn và duyệt đồ thị Neo4j GraphRAG để tìm mối quan hệ liên kết chéo giữa các điều luật. <strong>(Đã cập nhật: Đồng bộ sử dụng <code>norm_number</code>, quan hệ thực tế và truy vấn context qua <code>CONTAINS*1..6</code>)</strong></td>
                             </tr>
                             <tr>
                                 <td><code>check_legal_status</code></td>
-                                <td>Kiểm tra trạng thái hiệu lực thực tế của văn bản pháp lý (còn hiệu lực, hết hiệu lực, bị sửa đổi...).</td>
+                                <td>Kiểm tra trạng thái hiệu lực thực tế của văn bản pháp lý, trả thêm <code>error</code> để phân biệt lỗi hệ thống với trường hợp không tìm thấy dữ liệu.</td>
                             </tr>
                             <tr>
                                 <td><code>read_document_chunk</code></td>
-                                <td>Đọc và trích xuất từng phân đoạn nội dung của tài liệu PDF/Word/Text để tối ưu hóa ngữ cảnh LLM.</td>
+                                <td>Đọc và trích xuất từng phân đoạn nội dung của tài liệu PDF/Word/Text để tối ưu hóa ngữ cảnh LLM, có kiểm tra <code>chunk_size &gt; 0</code>.</td>
                             </tr>
                             <tr>
                                 <td><code>validate_citations</code></td>
-                                <td>Đối chiếu chéo các trích dẫn pháp lý trong phản hồi với nguồn dữ liệu thô ban đầu. <strong>(Đã cập nhật: Hỗ trợ phân tích số hiệu chứa gạch ngang dạng <code>TT-BTC</code> bằng regex cải tiến)</strong></td>
+                                <td>Đối chiếu chéo các trích dẫn pháp lý trong phản hồi với nguồn dữ liệu thô ban đầu. <strong>(Đã cập nhật: tách <code>exists</code>/<code>valid</code> khỏi điểm cosine, similarity chỉ là cảnh báo diễn giải)</strong></td>
                             </tr>
                             <tr>
                                 <td><code>generate_report</code></td>
-                                <td>Xuất báo cáo kết quả tư vấn theo nhiều định dạng (PDF/HTML/MD/Excel) sử dụng Strategy Pattern.</td>
+                                <td>Xuất báo cáo kết quả tư vấn theo Markdown/HTML bằng Strategy Pattern; PDF/Excel chưa expose cho tới khi có implementation thật.</td>
                             </tr>
                             <tr>
                                 <td><code>send_email_action</code></td>
-                                <td>Gửi báo cáo kết quả tư vấn trực tiếp đến địa chỉ email của người dùng qua giao thức SMTP.</td>
+                                <td>Gửi báo cáo kết quả tư vấn qua SMTP; chỉ chạy demo giả lập khi bật <code>SMTP_SIMULATION=true</code>.</td>
                             </tr>
                             <tr>
                                 <td><code>answer_directly</code></td>
-                                <td>Bypass toàn bộ pipeline để phản hồi trực tiếp các yêu cầu ngoài nghiệp vụ hoặc chitchat.</td>
+                                <td>Bypass helper gọi LLM để phản hồi chitchat/out-of-scope; về kiến trúc nên đặt ở orchestrator node hơn là raw data tool.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -302,17 +302,17 @@
                     <tr>
                         <td><strong>1.6a</strong></td>
                         <td><code>tools/validate_citations.py</code> [Đã hoàn thành]</td>
-                        <td>Tool đối chiếu và kiểm chứng trích dẫn pháp lý chống ảo tưởng (hallucination) sử dụng Cosine Similarity.</td>
+                        <td>Tool đối chiếu trích dẫn pháp lý trong Neo4j; Cosine Similarity chỉ dùng làm tín hiệu cảnh báo diễn giải.</td>
                     </tr>
                     <tr>
                         <td><strong>1.6b</strong></td>
                         <td><code>tools/answer_directly.py</code> [Đã hoàn thành]</td>
-                        <td>Tool bypass trả lời trực tiếp cho chitchat/Out-of-Scope bằng LLM.</td>
+                        <td>Bypass helper trả lời trực tiếp cho chitchat/Out-of-Scope bằng LLM, tạm giữ trong tools để không phá import.</td>
                     </tr>
                     <tr>
                         <td><strong>1.6c</strong></td>
                         <td><code>tools/web_search_mcp.py</code> [Đã hoàn thành]</td>
-                        <td>Tool tìm kiếm thông tin pháp luật trực tuyến bổ trợ qua DuckDuckGo.</td>
+                        <td>Tool tìm kiếm thông tin pháp luật trực tuyến bổ trợ qua Tavily Search API.</td>
                     </tr>
                     <tr>
                         <td><strong>1.6d</strong></td>
@@ -322,7 +322,7 @@
                     <tr>
                         <td><strong>1.6e</strong></td>
                         <td><code>tools/send_email_action.py</code> [Đã hoàn thành]</td>
-                        <td>Tool gửi SMTP Email hành động kèm báo cáo PDF/HTML (có Simulation Mode).</td>
+                        <td>Tool gửi SMTP Email hành động kèm báo cáo; Simulation Mode chỉ hoạt động khi cấu hình <code>SMTP_SIMULATION=true</code>.</td>
                     </tr>
                     <tr>
                         <td><strong>1.7</strong></td>

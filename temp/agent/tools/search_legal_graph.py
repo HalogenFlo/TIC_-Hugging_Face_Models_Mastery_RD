@@ -98,7 +98,7 @@ def get_component_context(comp_id: str) -> Dict[str, Any]:
         
         # 1. Lấy văn bản luật gốc chứa Component (dùng chung cho cả 2 cấu trúc)
         query_norm = """
-        MATCH (n:Norm)-[:CONTAINS]->(c:Component {comp_id: $comp_id})
+        MATCH (n:Norm)-[:CONTAINS*1..6]->(c:Component {comp_id: $comp_id})
         RETURN n.norm_number AS code, n.norm_type AS type LIMIT 1
         """
         
@@ -113,7 +113,7 @@ def get_component_context(comp_id: str) -> Dict[str, Any]:
         RETURN c.title_text AS title, c.citation AS citation, c.level AS level LIMIT 1
         """
         
-        context = {"norm": {}, "component": {}}
+        context = {"norm": {}, "component": {}, "error": None}
         with driver.session() as session:
             # Lấy Norm gốc
             res_norm = session.run(query_norm, comp_id=comp_id)
@@ -136,4 +136,4 @@ def get_component_context(comp_id: str) -> Dict[str, Any]:
         return context
     except Exception as e:
         print(f"[ERROR] get_component_context failed: {e}")
-        return {"norm": {}, "component": {}}
+        return {"norm": {}, "component": {}, "error": str(e)}

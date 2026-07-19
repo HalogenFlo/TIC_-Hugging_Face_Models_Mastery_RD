@@ -44,6 +44,9 @@ def read_pdf_file(file_path: str) -> str:
 
 def read_document_chunk(file_path: str, chunk_index: int = 0, chunk_size: int = 2000) -> Dict[str, Any]:
     """Đọc và trích xuất một phân đoạn nội dung của tệp tài liệu dựa trên index."""
+    if chunk_size <= 0:
+        raise ValueError("chunk_size phải lớn hơn 0.")
+        
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Không tìm thấy tệp tài liệu tại đường dẫn: {file_path}")
         

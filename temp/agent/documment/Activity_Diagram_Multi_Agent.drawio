@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="antigravity">
   <diagram name="So Do Hoat Dong - Multi-Agent System" id="actDiag">
-    <mxGraphModel dx="2847" dy="708" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="2560" math="0" shadow="0">
+    <mxGraphModel dx="3164" dy="914" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="2560" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -52,7 +52,7 @@
         <mxCell id="d_type" parent="1" style="rhombus;whiteSpace=wrap;html=1;strokeWidth=1.5;fontSize=10;fontStyle=1;fillColor=#AED6F1;strokeColor=#3A7CA5;fontColor=#1a1a1a;" value="Loại&lt;br&gt;câu hỏi?" vertex="1">
           <mxGeometry height="60" width="70" x="585" y="465" as="geometry" />
         </mxCell>
-        <mxCell id="a_bypass" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;strokeWidth=1.5;fontSize=11;fontStyle=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontColor=#333333;" value="Tool: answer_directly&lt;br&gt;&lt;font style=&quot;font-weight:normal;font-size:10px;&quot;&gt;Trả lời trực tiếp&lt;br&gt;(không qua sub-agent)&lt;/font&gt;" vertex="1">
+        <mxCell id="a_bypass" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;strokeWidth=1.5;fontSize=11;fontStyle=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontColor=#333333;" value="Agent: answer_directly&lt;br&gt;&lt;font style=&quot;font-weight:normal;font-size:10px;&quot;&gt;Trả lời trực tiếp&lt;br&gt;(không qua sub-agent)&lt;/font&gt;" vertex="1">
           <mxGeometry height="55" width="220" x="100" y="465" as="geometry" />
         </mxCell>
         <mxCell id="a_route" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=15;strokeWidth=1.5;fontSize=11;fontStyle=1;fillColor=#AED6F1;strokeColor=#3A7CA5;fontColor=#1a1a1a;" value="Coordinator Agent&lt;br&gt;&lt;font style=&quot;font-weight:normal;font-size:10px;&quot;&gt;Task Routing — chọn sub-agent phù hợp&lt;br&gt;Payload Pruning — cắt bớt payload&lt;/font&gt;" vertex="1">

@@ -13,6 +13,7 @@ SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 SMTP_USERNAME = os.getenv("SMTP_USERNAME")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD")
+SMTP_SIMULATION = os.getenv("SMTP_SIMULATION", "false").strip().lower() == "true"
 
 def send_email_action(
     recipient_email: str, 
@@ -23,14 +24,24 @@ def send_email_action(
     """Gửi email chứa báo cáo tư vấn. Tự động chuyển sang chế độ giả lập nếu thiếu cấu hình SMTP."""
     
     # 1. Kiểm tra cấu hình môi trường
-    if not SMTP_USERNAME or not SMTP_PASSWORD:
-        print("[WARNING] Thiếu cấu hình SMTP_USERNAME hoặc SMTP_PASSWORD trong file .env.")
-        print(f"[SIMULATION] Giả lập gửi email thành công tới: {recipient_email}")
-        print(f"[SIMULATION] Tiêu đề: {subject}")
-        print(f"[SIMULATION] Đính kèm: {attachment_path}")
+    if SMTP_SIMULATION:
+        print(f"[SIMULATION] Email simulated successfully to: {recipient_email}")
+        print(f"[SIMULATION] Subject: {subject}")
+        print(f"[SIMULATION] Attachment: {attachment_path}")
         return {
             "status": "simulated",
             "message": "Giả lập gửi email thành công (chế độ demo do thiếu cấu hình SMTP).",
+            "recipient": recipient_email,
+            "subject": subject,
+            "attachment": attachment_path
+        }
+    
+    if not SMTP_USERNAME or not SMTP_PASSWORD:
+        message = "Missing SMTP_USERNAME or SMTP_PASSWORD. Set SMTP_SIMULATION=true to run demo mode."
+        print(f"[ERROR] {message}")
+        return {
+            "status": "failed",
+            "message": message,
             "recipient": recipient_email,
             "subject": subject,
             "attachment": attachment_path
@@ -59,7 +70,7 @@ def send_email_action(
             )
             msg.attach(part)
         except Exception as e:
-            print(f"[WARNING] Lỗi khi đính kèm file: {e}")
+            print(f"[WARNING] Cannot attach file: {e}")
             
     # 4. Thực hiện gửi qua SMTP Server
     try:
@@ -76,7 +87,7 @@ def send_email_action(
             "subject": subject
         }
     except Exception as e:
-        print(f"[ERROR] Gửi email thất bại: {e}")
+        print(f"[ERROR] Failed to send email: {e}")
         return {
             "status": "failed",
             "message": f"Gửi email thất bại: {str(e)}",

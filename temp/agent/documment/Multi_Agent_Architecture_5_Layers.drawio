@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="antigravity">
   <diagram name="Kien Truc 5 Tang - Multi-Agent" id="arch5layers">
-    <mxGraphModel dx="975" dy="536" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="0">
+    <mxGraphModel dx="1178" dy="648" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -62,10 +62,10 @@
           <mxGeometry height="62" width="165" x="440" y="439.5" as="geometry" />
         </mxCell>
         <mxCell id="conflict" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE1B6;strokeColor=#C9902E;fontSize=10;fontStyle=1;fontColor=#333;arcSize=10;strokeWidth=1.5;" value="Conflict&lt;br&gt;Resolution Agent" vertex="1">
-          <mxGeometry height="62" width="165" x="690" y="440" as="geometry" />
+          <mxGeometry height="62" width="165" x="650" y="440" as="geometry" />
         </mxCell>
         <mxCell id="synth" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#AED6F1;strokeColor=#3A7CA5;fontSize=10;fontStyle=1;fontColor=#333;arcSize=10;strokeWidth=1.5;" value="Synthesis &amp;&lt;br&gt;Validation Agent" vertex="1">
-          <mxGeometry height="62" width="165" x="920" y="440" as="geometry" />
+          <mxGeometry height="62" width="165" x="845" y="439.5" as="geometry" />
         </mxCell>
         <mxCell id="l1bg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9E6;strokeColor=#E6D9A3;strokeWidth=1;arcSize=4;opacity=50;" value="" vertex="1">
           <mxGeometry height="290" width="1070" x="145" y="540" as="geometry" />
@@ -98,7 +98,7 @@
           <mxGeometry height="48" width="120" x="830" y="670" as="geometry" />
         </mxCell>
         <mxCell id="t_answer" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDF0;strokeColor=#D6B656;fontSize=9;fontStyle=1;fontColor=#333;arcSize=8;strokeWidth=1.2;" value="answer_directly" vertex="1">
-          <mxGeometry height="48" width="120" x="1000" y="670" as="geometry" />
+          <mxGeometry height="48" width="120" x="1080" y="447" as="geometry" />
         </mxCell>
         <mxCell id="e2" edge="1" parent="1" source="coord" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#3A7CA5;strokeWidth=1.8;endArrow=blockThin;endFill=1;fontSize=9;fontColor=#3A7CA5;" target="qr" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -197,16 +197,16 @@
         <mxCell id="e_coord_answer" edge="1" parent="1" source="coord" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#3A7CA5;strokeWidth=1.5;endArrow=blockThin;endFill=1;dashed=1;dashPattern=8 4;fontSize=8;fontColor=#3A7CA5;" target="t_answer" value="bypass">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1150" y="360" />
-              <mxPoint x="1150" y="694" />
+              <mxPoint x="1200" y="360" />
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="e_answer_coord" edge="1" parent="1" source="t_answer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#D6B656;strokeWidth=1.5;endArrow=blockThin;endFill=1;dashed=1;dashPattern=8 4;fontSize=8;fontColor=#D6B656;" target="coord" value="direct_response">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="1130" y="694" />
-              <mxPoint x="1130" y="370" />
+              <mxPoint x="1155" y="410" />
+              <mxPoint x="1130" y="410" />
+              <mxPoint x="1130" y="360" />
             </Array>
           </mxGeometry>
         </mxCell>
@@ -223,8 +223,8 @@
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="570" y="200" />
-              <mxPoint x="1130" y="200" />
-              <mxPoint x="1130" y="471" />
+              <mxPoint x="1080" y="200" />
+              <mxPoint x="1080" y="471" />
             </Array>
           </mxGeometry>
         </mxCell>

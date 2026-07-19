@@ -51,6 +51,7 @@ def web_search_mcp(
         
     results = []
     seen_links = set() # Tập hợp để lọc trùng lặp URL
+    is_trusted_search = bool(limit_to_trusted and TRUSTED_DOMAINS)
     
     try:
         req = urllib.request.Request(
@@ -70,7 +71,8 @@ def web_search_mcp(
                     results.append({
                         "title": r.get("title"),
                         "link": link,
-                        "snippet": r.get("content")
+                        "snippet": r.get("content"),
+                        "trusted": is_trusted_search
                     })
     except Exception as e:
         print(f"[WARNING] Error executing Tavily search: {e}")
