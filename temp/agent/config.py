@@ -1,5 +1,10 @@
 # Chức năng: Cấu hình hệ thống, quản lý driver kết nối cơ sở dữ liệu và model adapters.
 
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 import os
 from typing import Optional, Any, List
 from dotenv import load_dotenv
@@ -139,7 +144,10 @@ def get_db_connection() -> Optional[Any]:
     if DB_URI:
         try:
             from sqlalchemy import create_engine
-            engine = create_engine(DB_URI, pool_size=5, max_overflow=10)
+            if DB_URI.startswith("sqlite"):
+                engine = create_engine(DB_URI)
+            else:
+                engine = create_engine(DB_URI, pool_size=5, max_overflow=10)
             _db_connection = engine.connect()
             return _db_connection
         except ImportError:
@@ -172,9 +180,18 @@ def get_db_connection() -> Optional[Any]:
             return _db_connection
         except ImportError:
             print("[WARNING] DB connection libraries ('psycopg2', 'pymysql', or 'sqlalchemy') are not installed.")
-            return None
     except Exception as e:
         print(f"[WARNING] Cannot connect to relational database: {e}")
+
+    # Fallback tự động sang SQLite cục bộ nếu không kết nối được PostgreSQL/MySQL
+    try:
+        print("[INFO] Auto fallback database connection to local SQLite (tic_personal_memory.db)")
+        from sqlalchemy import create_engine
+        engine = create_engine("sqlite:///tic_personal_memory.db")
+        _db_connection = engine.connect()
+        return _db_connection
+    except Exception as e:
+        print(f"[WARNING] Auto fallback to SQLite failed: {e}")
         _db_connection = None
         return None
 
@@ -263,6 +280,12 @@ class GeminiModelAdapter:
 def get_ai_model(model_name: str, provider: str = "openai") -> Any:
     provider = provider.lower()
     
+    # Tự động mapping model name phù hợp với provider để tránh lỗi hardcode model name của provider khác
+    if provider == "openai" and "gemini" in model_name.lower():
+        model_name = "gpt-4o-mini"
+    elif provider == "gemini" and ("gpt" in model_name.lower() or "openai" in model_name.lower()):
+        model_name = "gemini-3.5-flash"
+        
     if provider == "openai":
         from openai import OpenAI
         api_key = os.getenv("GITHUB_TOKEN") or os.getenv("OPENAI_API_KEY")
@@ -292,6 +315,8 @@ def get_ai_model(model_name: str, provider: str = "openai") -> Any:
 
 def get_embedding(text: str, provider: str = DEFAULT_PROVIDER) -> List[float]:
     """Sinh vector embedding từ văn bản với số chiều là 3072."""
+    # Bắt buộc sử dụng gemini cho embedding để đồng nhất không gian vector của Neo4j DB
+    provider = "gemini"
     provider = provider.lower()
     
     if provider == "openai":

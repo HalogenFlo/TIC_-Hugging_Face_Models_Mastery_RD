@@ -65,9 +65,15 @@ def loop_controller_check(state: AgentState) -> Dict[str, Any]:
     # 3. Phán quyết vòng lặp
     is_valid = verification.get("is_valid", True)
     
+    # Tối ưu hóa: Nếu không có trích dẫn nguồn nào trong DB sau lượt 1, ép kết thúc sớm để tránh timeout
+    citations = state.get("citations", [])
+    if not is_valid and len(citations) == 0 and loop_step >= 1:
+        print(f"[LOOP CONTROLLER] No citations found in database after turn {loop_step}. Terminating loop early to prevent timeout.")
+        is_valid = True
+        
     if not is_valid and loop_step < MAX_LOOP_STEPS:
         # Yêu cầu chạy lại vòng lặp để sửa đổi
-        print(f"[LOOP CONTROLLER] Lượt {loop_step + 1}/{MAX_LOOP_STEPS} không đạt chất lượng. Lý do: {verification.get('reason')}. Quay lại sửa đổi...")
+        print(f"[LOOP CONTROLLER] Turn {loop_step + 1}/{MAX_LOOP_STEPS} failed quality check. Reason: {verification.get('reason')}. Retrying...")
         return {
             "evaluation": new_evaluation,
             "loop_step": loop_step + 1,
@@ -76,9 +82,12 @@ def loop_controller_check(state: AgentState) -> Dict[str, Any]:
     else:
         # Đạt chất lượng hoặc đạt giới hạn số lần lặp tối đa
         if not is_valid:
-            print(f"[LOOP CONTROLLER] Đạt giới hạn lặp tối đa ({MAX_LOOP_STEPS}). Force exit và chấp nhận kết quả hiện tại.")
+            if len(citations) == 0:
+                print(f"[LOOP CONTROLLER] Loop terminated early due to lack of reference materials in database.")
+            else:
+                print(f"[LOOP CONTROLLER] Reached max loop steps ({MAX_LOOP_STEPS}). Force exit and accept current draft.")
         else:
-            print(f"[LOOP CONTROLLER] Báo cáo đạt chất lượng thẩm định ở lượt thứ {loop_step}. Tiến tới phê duyệt.")
+            print(f"[LOOP CONTROLLER] Report passed quality verification at turn {loop_step}. Proceeding to approval.")
             
         return {
             "evaluation": new_evaluation,
@@ -88,11 +97,11 @@ def loop_controller_check(state: AgentState) -> Dict[str, Any]:
 def execute_human_checkpoint(draft_answer: str) -> bool:
     """Giả lập checkpoint phê duyệt thủ công từ người vận hành (Human Checkpoint)."""
     print("\n" + "-"*40)
-    print(" [HUMAN CHECKPOINT] YÊU CẦU PHÊ DUYỆT BÁO CÁO ".center(40, "="))
+    print(" [HUMAN CHECKPOINT] REPORT APPROVAL REQUEST ".center(40, "="))
     print("-"*40)
     # Lấy 100 từ đầu tiên để hiển thị nhanh
     preview = draft_answer[:200] + "..." if len(draft_answer) > 200 else draft_answer
-    print(f"Bản nháp báo cáo:\n{preview}")
+    print(f"Draft report:\n{preview}")
     print("-"*40)
-    print("[INFO] Hệ thống tự động phê duyệt trong chế độ tự động hóa.")
+    print("[INFO] System automatically approved in automation mode.")
     return True

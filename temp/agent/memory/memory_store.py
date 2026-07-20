@@ -51,7 +51,25 @@ def execute_sql(query: str, params: tuple = ()) -> Optional[List[tuple]]:
         if hasattr(conn, "execute") and not hasattr(conn, "cursor"):
             # Thích ứng với SQLAlchemy Connection
             from sqlalchemy import text
-            result = conn.execute(text(query), params)
+            new_query = query
+            param_dict = {}
+            if params:
+                if "%s" in query:
+                    parts = query.split("%s")
+                    new_query_parts = []
+                    for i in range(len(params)):
+                        new_query_parts.append(parts[i])
+                        new_query_parts.append(f":p{i}")
+                    new_query_parts.append(parts[-1])
+                    new_query = "".join(new_query_parts)
+                    param_dict = {f"p{i}": val for i, val in enumerate(params)}
+                else:
+                    if isinstance(params, dict):
+                        param_dict = params
+                    else:
+                        param_dict = {f"p{i}": val for i, val in enumerate(params)}
+            
+            result = conn.execute(text(new_query), param_dict)
             # Thử commit nếu database có hỗ trợ autocommit=False
             try:
                 if hasattr(conn, "commit"):

@@ -162,6 +162,101 @@
             box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
         }
 
+        /* CHAT SESSIONS CSS */
+        .btn-new-chat {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--color-indigo), var(--color-accent));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.2);
+        }
+
+        .btn-new-chat:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(138, 43, 226, 0.35);
+        }
+
+        .session-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 250px;
+            padding-right: 4px;
+        }
+
+        /* Custom scrollbar cho session list */
+        .session-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .session-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .session-item {
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .session-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .session-item.active {
+            background: rgba(138, 43, 226, 0.12);
+            border-color: var(--color-indigo);
+            color: #fff;
+        }
+
+        .session-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-delete-session {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            opacity: 0.4;
+            transition: all 0.2s;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .btn-delete-session:hover {
+            color: #ef4444;
+            opacity: 1;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
         /* CHAT WINDOW */
         .chat-area {
             flex: 1;
@@ -417,24 +512,38 @@
                 <div class="brand-name">LegalMAS UI</div>
             </div>
             
-            <div class="sidebar-content">
-                <!-- User Profile Memory (Postgres) -->
-                <div class="profile-card">
+            <div class="sidebar-content" style="gap: 16px;">
+                <!-- Nút Tạo Hội Thoại Mới -->
+                <button class="btn-new-chat" onclick="createNewSession()">
+                    <span>➕ Cuộc hội thoại mới</span>
+                </button>
+                
+                <!-- Danh sách Lịch sử Hội thoại -->
+                <div class="profile-card" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 200px;">
                     <div class="card-title">
-                        <span>👤 Hồ Sơ Người Dùng</span>
+                        <span>💬 Lịch sử hội thoại</span>
                     </div>
-                    <ul class="profile-list" id="profile-facts">
-                        <li style="color: var(--text-secondary); font-style: italic;">Đang tải dữ liệu hồ sơ...</li>
-                    </ul>
+                    <div class="session-list" id="session-list">
+                        <!-- Danh sách session chat -->
+                    </div>
                 </div>
-
-                <div class="profile-card">
-                    <div class="card-title">
-                        <span>🎯 Phong Cách Ưu Tiên</span>
+                
+                <!-- User Profile Memory (SQLite Fallback) -->
+                <div class="profile-card" style="margin-top: auto;">
+                    <div class="card-title" style="cursor: pointer; margin-bottom: 8px;" onclick="toggleProfileCard()">
+                        <span>👤 Hồ Sơ Khách Hàng (Memory)</span>
+                        <span id="profile-toggle-icon" style="margin-left: auto; font-size: 0.75rem;">▼</span>
                     </div>
-                    <ul class="profile-list" id="profile-prefs">
-                        <li style="color: var(--text-secondary); font-style: italic;">Chưa phát hiện sở thích.</li>
-                    </ul>
+                    <div id="profile-details-section">
+                        <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-indigo); margin-bottom: 4px; letter-spacing: 0.5px;">SỰ KIỆN TÍCH LŨY:</div>
+                        <ul class="profile-list" id="profile-facts" style="margin-bottom: 12px; max-height: 80px; overflow-y: auto;">
+                            <li style="color: var(--text-secondary); font-style: italic;">Chưa thu thập dữ kiện.</li>
+                        </ul>
+                        <div style="font-size: 0.75rem; font-weight: 600; color: var(--color-accent); margin-bottom: 4px; letter-spacing: 0.5px;">PHONG CÁCH YÊU CẦU:</div>
+                        <ul class="profile-list" id="profile-prefs" style="max-height: 80px; overflow-y: auto;">
+                            <li style="color: var(--text-secondary); font-style: italic;">Chưa ghi nhận sở thích.</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <button class="btn-reset" onclick="resetSession()">
@@ -504,16 +613,20 @@
     </div>
 
     <script>
-        // Khởi tạo trạng thái phiên làm việc cục bộ
+        // Trạng thái cục bộ
         let chatState = {
             user_profile: { facts: [], preferences: [] },
             effort_level: "simple"
         };
         let isWaiting = false;
+        
+        // Quản lý đa phiên hội thoại (Chat Sessions)
+        let sessions = [];
+        let currentSessionId = null;
 
-        // Tải thông tin hồ sơ ban đầu từ server
+        // Tải danh sách session khi load trang
         window.addEventListener('DOMContentLoaded', () => {
-            updateProfileUI();
+            loadSessionsFromStorage();
         });
 
         function handleKeyPress(e) {
@@ -528,7 +641,6 @@
             msgDiv.classList.add("message", sender);
             
             if (sender === "assistant") {
-                // Sử dụng marked để render markdown
                 msgDiv.innerHTML = marked.parse(text);
             } else {
                 msgDiv.textContent = text;
@@ -579,12 +691,11 @@
         function highlightNodes(executedNodes) {
             resetGraphNodes();
             
-            // Map LangGraph node names to UI node element IDs
             const nodeMapping = {
                 "orchestrator_initial_node": "node-initial",
                 "query_reform_node": "node-reform",
                 "orchestrator_check_node": "node-check",
-                "chitchat_node": "node-initial", // chitchat coi như thuộc initial logic
+                "chitchat_node": "node-initial",
                 "tax_node": "node-domains",
                 "land_node": "node-domains",
                 "conflict_node": "node-conflict",
@@ -593,7 +704,7 @@
                 "clear_raw_outputs_node": "node-clear"
             };
 
-            executedNodes.forEach(node => {
+           executedNodes.forEach(node => {
                 const uiId = nodeMapping[node];
                 if (uiId) {
                     const el = document.getElementById(uiId);
@@ -603,6 +714,154 @@
                 }
             });
         }
+
+        // --- QUẢN LÝ SESSIONS LOGIC ---
+        
+        function loadSessionsFromStorage() {
+            try {
+                const data = localStorage.getItem("legalmas_sessions");
+                if (data) {
+                    sessions = JSON.parse(data);
+                }
+            } catch (e) {
+                console.error("Error loading sessions:", e);
+            }
+            if (sessions.length === 0) {
+                createNewSession();
+            } else {
+                currentSessionId = sessions[0].id;
+                renderSessionList();
+                selectSession(currentSessionId);
+            }
+        }
+
+        function saveSessionsToStorage() {
+            try {
+                localStorage.setItem("legalmas_sessions", JSON.stringify(sessions));
+            } catch (e) {
+                console.error("Error saving sessions:", e);
+            }
+        }
+
+        function createNewSession() {
+            const newId = "session_" + Date.now();
+            const newSession = {
+                id: newId,
+                title: "Cuộc hội thoại mới",
+                messages: [
+                    { sender: "assistant", text: "Xin chào! Tôi là Trợ lý tư vấn pháp luật đa tác nhân (LegalMAS). Tôi có thể hỗ trợ bạn các vấn đề liên quan đến **Luật Thuế** và **Luật Đất Đai Việt Nam**. Bạn cần tư vấn về vấn đề gì hôm nay?" }
+                ],
+                state: {
+                    user_profile: { facts: [], preferences: [] },
+                    effort_level: "simple"
+                }
+            };
+            sessions.unshift(newSession);
+            currentSessionId = newId;
+            saveSessionsToStorage();
+            renderSessionList();
+            selectSession(newId);
+        }
+
+        function renderSessionList() {
+            const listDiv = document.getElementById("session-list");
+            listDiv.innerHTML = "";
+            
+            sessions.forEach(s => {
+                const itemDiv = document.createElement("div");
+                itemDiv.className = `session-item ${s.id === currentSessionId ? 'active' : ''}`;
+                itemDiv.onclick = (e) => {
+                    if (e.target.closest('.btn-delete-session')) return;
+                    selectSession(s.id);
+                };
+                
+                const titleSpan = document.createElement("span");
+                titleSpan.className = "session-title";
+                titleSpan.textContent = s.title;
+                
+                const delBtn = document.createElement("button");
+                delBtn.className = "btn-delete-session";
+                delBtn.innerHTML = "🗑️";
+                delBtn.title = "Xóa hội thoại";
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteSession(s.id);
+                };
+                
+                itemDiv.appendChild(titleSpan);
+                itemDiv.appendChild(delBtn);
+                listDiv.appendChild(itemDiv);
+            });
+        }
+
+        function selectSession(sessionId) {
+            currentSessionId = sessionId;
+            const session = sessions.find(s => s.id === sessionId);
+            if (!session) return;
+            
+            chatState = JSON.parse(JSON.stringify(session.state));
+            
+            // highlight item active
+            const items = document.querySelectorAll(".session-item");
+            items.forEach(item => {
+                item.classList.remove("active");
+            });
+            
+            // Re-render list để đồng bộ trạng thái active
+            renderSessionList();
+            
+            // Khôi phục khung chat
+            const container = document.getElementById("chat-messages");
+            container.innerHTML = "";
+            session.messages.forEach(msg => {
+                const sender = msg.sender;
+                const text = msg.text;
+                const msgDiv = document.createElement("div");
+                msgDiv.classList.add("message", sender);
+                if (sender === "assistant") {
+                    msgDiv.innerHTML = marked.parse(text);
+                } else {
+                    msgDiv.textContent = text;
+                }
+                container.appendChild(msgDiv);
+            });
+            container.scrollTop = container.scrollHeight;
+            
+            updateProfileUI();
+            resetGraphNodes();
+            document.getElementById("clarify-banner").style.display = "none";
+            document.getElementById("chat-input").placeholder = chatState.effort_level === "clarification" ? "Nhập thông tin trả lời làm rõ..." : "Nhập câu hỏi pháp lý của bạn...";
+        }
+
+        function deleteSession(sessionId) {
+            if (confirm("Bạn có chắc chắn muốn xóa cuộc hội thoại này?")) {
+                sessions = sessions.filter(s => s.id !== sessionId);
+                if (sessions.length === 0) {
+                    createNewSession();
+                } else {
+                    if (currentSessionId === sessionId) {
+                        currentSessionId = sessions[0].id;
+                    }
+                    saveSessionsToStorage();
+                    renderSessionList();
+                    selectSession(currentSessionId);
+                }
+            }
+        }
+
+        function toggleProfileCard() {
+            const details = document.getElementById("profile-details-section");
+            const icon = document.getElementById("profile-toggle-icon");
+            if (details.style.display === "none") {
+                details.style.display = "block";
+                icon.textContent = "▼";
+            } else {
+                details.style.display = "none";
+                icon.textContent = "▲";
+            }
+        }
+
+        // --- GỬI TIN NHẮN LOGIC ---
 
         async function sendMessage() {
             if (isWaiting) return;
@@ -614,7 +873,18 @@
             input.value = "";
             appendMessage("user", query);
             
-            // Hiển thị trạng thái đang xử lý (loading dots)
+            // Ghi nhận tin nhắn user vào session hiện tại
+            const session = sessions.find(s => s.id === currentSessionId);
+            if (session) {
+                session.messages.push({ sender: "user", text: query });
+                // Cập nhật tiêu đề session bằng câu hỏi đầu tiên
+                if (session.title === "Cuộc hội thoại mới" && session.messages.length === 2) {
+                    session.title = query.length > 25 ? query.substring(0, 25) + "..." : query;
+                    renderSessionList();
+                }
+                saveSessionsToStorage();
+            }
+            
             isWaiting = true;
             const msgContainer = document.getElementById("chat-messages");
             const loadingDiv = document.createElement("div");
@@ -624,17 +894,14 @@
             msgContainer.appendChild(loadingDiv);
             msgContainer.scrollTop = msgContainer.scrollHeight;
             
-            // Xóa trạng thái các Node cũ
             resetGraphNodes();
-            
-            // Ẩn banner làm rõ nếu có
             document.getElementById("clarify-banner").style.display = "none";
             
             try {
                 const response = await fetch("/api/chat", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: jsonStr = JSON.stringify({
+                    body: JSON.stringify({
                         raw_query: query,
                         user_id: "web_user_01",
                         state: chatState
@@ -642,59 +909,72 @@
                 });
                 
                 const result = await response.json();
-                
-                // Xóa loading bubble
                 const bubble = document.getElementById("loading-bubble");
                 if (bubble) bubble.remove();
                 
                 if (result.success) {
-                    // Cập nhật State
                     chatState = result.state;
-                    
-                    // Highlight các node đã chạy
                     highlightNodes(result.nodes_executed || []);
-                    
-                    // Cập nhật Profile UI (facts/prefs)
                     updateProfileUI();
                     
-                    // Phản hồi kết quả
+                    let assistantText = "";
                     if (result.effort_level === "clarification") {
-                        // Trình hỏi làm rõ
-                        appendMessage("assistant", "Tôi cần thêm thông tin để làm rõ câu hỏi của bạn. Vui lòng xem yêu cầu làm rõ bên dưới.");
+                        assistantText = "Tôi cần thêm thông tin để làm rõ câu hỏi của bạn. Vui lòng xem yêu cầu làm rõ bên dưới.";
+                        appendMessage("assistant", assistantText);
                         document.getElementById("clarify-prompt-text").textContent = result.human_feedback;
                         document.getElementById("clarify-banner").style.display = "block";
                         document.getElementById("chat-input").placeholder = "Nhập thông tin trả lời làm rõ...";
                     } else {
-                        // Trả câu trả lời chính thức
-                        appendMessage("assistant", result.draft_answer || "Đã xảy ra lỗi tóm tắt kết quả.");
+                        assistantText = result.draft_answer || "Đã xảy ra lỗi tóm tắt kết quả.";
+                        appendMessage("assistant", assistantText);
                         document.getElementById("chat-input").placeholder = "Nhập câu hỏi pháp lý của bạn...";
                     }
+                    
+                    // Ghi nhận tin nhắn assistant phản hồi và state vào session
+                    if (session) {
+                        session.messages.push({ sender: "assistant", text: assistantText });
+                        session.state = JSON.parse(JSON.stringify(chatState));
+                        saveSessionsToStorage();
+                    }
                 } else {
-                    appendMessage("assistant", "Xin lỗi, đã xảy ra lỗi trong quá trình kết nối máy chủ: " + result.error);
+                    const errText = "Xin lỗi, đã xảy ra lỗi trong quá trình kết nối máy chủ: " + result.error;
+                    appendMessage("assistant", errText);
+                    if (session) {
+                        session.messages.push({ sender: "assistant", text: errText });
+                        saveSessionsToStorage();
+                    }
                 }
             } catch (err) {
                 const bubble = document.getElementById("loading-bubble");
                 if (bubble) bubble.remove();
-                appendMessage("assistant", "Lỗi mạng hoặc server không phản hồi: " + err.message);
+                const networkErr = "Lỗi mạng hoặc server không phản hồi: " + err.message;
+                appendMessage("assistant", networkErr);
+                if (session) {
+                    session.messages.push({ sender: "assistant", text: networkErr });
+                    saveSessionsToStorage();
+                }
             } finally {
                 isWaiting = false;
             }
         }
 
         function resetSession() {
-            chatState = {
-                user_profile: { facts: [], preferences: [] },
-                effort_level: "simple"
-            };
-            document.getElementById("chat-messages").innerHTML = `
-                <div class="message assistant">
-                    Lịch sử hội thoại đã được đặt lại thành công. Tôi có thể hỗ trợ bạn các vấn đề liên quan đến **Luật Thuế** và **Luật Đất Đai Việt Nam**. Bạn cần tư vấn về vấn đề gì?
-                </div>
-            `;
-            document.getElementById("clarify-banner").style.display = "none";
-            document.getElementById("chat-input").placeholder = "Nhập câu hỏi pháp lý của bạn...";
-            resetGraphNodes();
-            updateProfileUI();
+            if (confirm("Bạn có chắc chắn muốn reset cuộc hội thoại này? Dữ liệu tin nhắn cũ của cuộc hội thoại hiện tại sẽ bị xóa sạch.")) {
+                const session = sessions.find(s => s.id === currentSessionId);
+                if (session) {
+                    session.messages = [
+                        { sender: "assistant", text: "Lịch sử hội thoại đã được đặt lại thành công. Tôi có thể hỗ trợ bạn các vấn đề liên quan đến **Luật Thuế** và **Luật Đất Đai Việt Nam**. Bạn cần tư vấn về vấn đề gì?" }
+                    ];
+                    session.title = "Cuộc hội thoại mới";
+                    session.state = {
+                        user_profile: { facts: [], preferences: [] },
+                        effort_level: "simple"
+                    };
+                    saveSessionsToStorage();
+                    renderSessionList();
+                    selectSession(currentSessionId);
+                }
+            }
         }
     </script>
 </body>

@@ -133,12 +133,12 @@ class WebUIRequestHandler(http.server.SimpleHTTPRequestHandler):
 def run_server():
     server_address = ('', PORT)
     httpd = http.server.HTTPServer(server_address, WebUIRequestHandler)
-    print(f"\n🚀 Máy chủ Web UI đang hoạt động tại: http://localhost:{PORT}")
-    print("Nhấn Ctrl+C để tắt máy chủ.\n")
+    print(f"\n[INFO] Web UI Server is running at: http://localhost:{PORT}")
+    print("[INFO] Press Ctrl+C to stop the server.\n")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\nĐang tắt máy chủ...")
+        print("\n[INFO] Stopping server...")
         httpd.server_close()
 
 if __name__ == "__main__":
