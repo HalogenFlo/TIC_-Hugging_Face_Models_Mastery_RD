@@ -1,0 +1,154 @@
+# Chức năng: TaxLawAgent tư vấn chuyên sâu về các vấn đề liên quan đến luật Thuế Việt Nam.
+
+import json
+from typing import Dict, Any, List, Optional
+from pydantic import BaseModel, Field
+from agents.base import BaseAgent
+from state import AgentState
+from skills.search_retrieval import execute_search_retrieval
+from skills.analysis import execute_deep_analysis
+from config import (
+    get_ai_model, 
+    DEFAULT_PROVIDER, 
+    MODEL_SUB_AGENT_GPT, 
+    MODEL_SUB_AGENT_GEMINI
+)
+
+class CitationItem(BaseModel):
+    norm_code: str = Field(description="Số hiệu văn bản pháp lý (ví dụ: 103/2014/TT-BTC)")
+    citation_name: str = Field(description="Tên điều khoản trích dẫn (ví dụ: Điều 10)")
+    comp_id: Optional[str] = Field(None, description="ID thành phần tương ứng nếu có")
+
+class TaxLawOutput(BaseModel):
+    draft_answer: str = Field(description="Câu trả lời nháp chi tiết bằng tiếng Việt, trích dẫn chính xác luật theo dạng [Số hiệu - Điều khoản].")
+    citations: List[CitationItem] = Field(description="Danh sách các trích dẫn đã sử dụng.")
+    requires_clarification: bool = Field(description="Đặt thành True nếu thiếu thông tin đầu vào từ người dùng để đưa ra kết luận pháp lý chính xác.")
+    clarification_prompt: Optional[str] = Field(None, description="Câu hỏi làm rõ gửi đến người dùng nếu requires_clarification = True.")
+
+class TaxLawAgent(BaseAgent):
+    """Tác nhân tư vấn chuyên sâu Luật Thuế Việt Nam (Tầng 2)."""
+    
+    def __init__(self, provider: str = DEFAULT_PROVIDER):
+        goal_context = (
+            "Bạn là một chuyên gia tư vấn pháp luật Thuế Việt Nam giàu kinh nghiệm. Nhiệm vụ của bạn là nhận "
+            "câu hỏi của người dùng và các thông tin luật được cung cấp từ CSDL để đưa ra câu trả lời nháp có "
+            "căn cứ pháp lý rõ ràng, chính xác và cập nhật hiệu lực mới nhất."
+        )
+        task_boundary = (
+            "Chỉ tư vấn và trả lời các nội dung liên quan đến Luật Thuế Việt Nam. Phải trích dẫn chính xác "
+            "các số hiệu văn bản và điều khoản được cung cấp trong phần tài liệu hỗ trợ theo dạng [Số hiệu - Điều khoản]. "
+            "Tuyệt đối không tự bịa đặt (hallucinate) các số hiệu văn bản hoặc nội dung điều luật không có trong tài liệu hỗ trợ."
+        )
+        skills_tools = ["search_retrieval", "analysis"]
+        
+        super().__init__(
+            goal_context=goal_context,
+            task_boundary=task_boundary,
+            skills_tools=skills_tools,
+            output_schema=TaxLawOutput
+        )
+        self.provider = provider
+
+    def _process_search_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
+        """Xử lý một kết quả tra cứu: trích xuất citation và phân tích lịch sử sửa đổi."""
+        comp_id = item.get("comp_id")
+        norm_number = item.get("norm_number", "Không rõ")
+        citation_name = item.get("citation", "Không rõ")
+        
+        citation = {
+            "norm_code": norm_number,
+            "citation_name": citation_name,
+            "comp_id": comp_id
+        }
+        
+        if not comp_id:
+            # Kết quả từ Web Search (Internet fallback)
+            text_unit = item.get("accumulated_text") or ""
+            return {
+                "citation": citation,
+                "context": f"=== TÀI LIỆU NGOÀI (INTERNET FALLBACK) ===\nNội dung:\n{text_unit}\n"
+            }
+        
+        # Phân tích sâu điều khoản trên đồ thị
+        try:
+            analysis = execute_deep_analysis(comp_id)
+            modifications = analysis.get("modifications", [])
+            mod_texts = [
+                f"- Bị sửa đổi/thay thế bởi văn bản {mod.get('amending_doc')} (Loại hành động: {mod.get('action_type')}). "
+                f"Nội dung sửa đổi bổ sung: {mod.get('action_text', 'Không có chi tiết')}"
+                for mod in modifications
+            ]
+            mod_desc = "\n".join(mod_texts) if mod_texts else "Không có sửa đổi bổ sung nào được ghi nhận trên đồ thị."
+        except Exception as ae:
+            print(f"[WARNING] execute_deep_analysis failed for comp_id {comp_id}: {ae}")
+            mod_desc = "Không thể phân tích lịch sử sửa đổi do lỗi hệ thống."
+        
+        text_unit = item.get("accumulated_text") or ""
+        context = (
+            f"=== VĂN BẢN: {norm_number} - ĐIỀU KHOẢN: {citation_name} ===\n"
+            f"ID thành phần: {comp_id}\n"
+            f"Trạng thái hiệu lực thực tế: {item.get('validity_status', 'Không rõ')}\n"
+            f"Nội dung văn bản gốc:\n{text_unit}\n"
+            f"Lịch sử hiệu lực / sửa đổi:\n{mod_desc}\n"
+        )
+        return {"citation": citation, "context": context}
+
+    def run(self, state: AgentState) -> Dict[str, Any]:
+        """Thực thi nghiệp vụ tra cứu, phân tích và soạn thảo câu trả lời luật Thuế."""
+        query_text = state.get("refined_query") or state.get("raw_query", "")
+        
+        # 1. Gọi Kỹ năng Tra cứu & Định vị Văn bản (Legal Search & Retrieval)
+        try:
+            search_results = execute_search_retrieval(query_text, provider=self.provider, limit=3)
+        except Exception as se:
+            print(f"[WARNING] execute_search_retrieval failed in TaxLawAgent: {se}")
+            search_results = []
+            
+        # 2. Xử lý từng kết quả tra cứu bằng Kỹ năng Phân tích sâu (Deep Analysis)
+        processed = list(map(self._process_search_item, search_results))
+        citations_found = [p["citation"] for p in processed]
+        detailed_context = [p["context"] for p in processed]
+        
+        # 3. Tổng hợp ngữ cảnh truyền cho LLM suy luận
+        context_str = "\n\n".join(detailed_context) if detailed_context else "Không tìm thấy tài liệu pháp lý liên quan trong CSDL."
+        
+        system_instruction = (
+            f"{self.goal_context}\n"
+            f"Ràng buộc nhiệm vụ: {self.task_boundary}\n\n"
+            "Hãy đọc kỹ câu hỏi của người dùng và dữ liệu pháp luật hỗ trợ được cung cấp để đưa ra câu trả lời chính xác, "
+            "logic và đúng căn cứ pháp luật. Lưu ý đối chiếu trạng thái hiệu lực thực tế (Hết hiệu lực hay Hết hiệu lực một phần...) "
+            "và thông tin sửa đổi bổ sung để cảnh báo cho người dùng nếu điều luật đó không còn hiệu lực đầy đủ.\n"
+            "ĐẶC BIỆT LƯU Ý VỀ XUNG ĐỘT THỜI GIAN: Nếu phát hiện điều luật có sự thay đổi nội dung/thuế suất/hình phạt qua các thời kỳ "
+            "mà câu hỏi người dùng không nêu rõ mốc thời gian xảy ra sự việc, hãy áp dụng CHIẾN LƯỢC TRẢ LỜI PHÂN NHÁNH THEO ĐIỀU KIỆN THỜI GIAN: "
+            "trình bày rõ ràng câu trả lời tương ứng với từng thời kỳ/mốc hiệu lực (ví dụ: trước khi sửa đổi áp dụng mức nào, từ ngày văn bản sửa đổi "
+            "có hiệu lực áp dụng mức nào) ngay trong draft_answer để người dùng có đầy đủ căn cứ đối chiếu.\n"
+            "Nếu dữ liệu hỗ trợ không đủ để đưa ra kết luận chắc chắn hoặc câu hỏi quá mơ hồ, hãy thiết lập requires_clarification = True "
+            "và viết một câu hỏi làm rõ tinh tế trong clarification_prompt để hướng dẫn người dùng bổ sung thông tin."
+        )
+        
+        user_content = (
+            f"Câu hỏi của người dùng: {query_text}\n\n"
+            f"Dữ liệu pháp luật hỗ trợ tra cứu:\n{context_str}\n"
+        )
+        
+        messages = [
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": user_content}
+        ]
+        
+        model_name = MODEL_SUB_AGENT_GPT if self.provider == "openai" else MODEL_SUB_AGENT_GEMINI
+        model = get_ai_model(model_name, provider=self.provider)
+        
+        try:
+            # 4. Sinh và parse phản hồi có cấu trúc
+            raw_output = model.generate(messages, response_schema=self.output_schema)
+            parsed = self.output_schema.model_validate_json(raw_output)
+            return parsed.model_dump()
+        except Exception as e:
+            # Fallback an toàn nếu LLM hoặc parse lỗi
+            return {
+                "draft_answer": "Không thể soạn thảo câu trả lời do lỗi hệ thống trong quá trình gọi mô hình ngôn ngữ.",
+                "citations": citations_found,
+                "requires_clarification": False,
+                "clarification_prompt": None
+            }

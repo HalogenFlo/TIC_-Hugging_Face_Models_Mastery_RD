@@ -34,6 +34,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="agents-reference.html">
+                        <span class="nav-icon">🤖</span>
+                        <span>Chi tiết Agents</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="tools-reference.html">
                         <span class="nav-icon">🛠️</span>
                         <span>Chi tiết Tools & Skills</span>
@@ -307,8 +313,8 @@
                     </tr>
                     <tr>
                         <td><strong>1.6b</strong></td>
-                        <td><code>agents/direct_response.py</code> [Đã hoàn thành → sẽ di chuyển]</td>
-                        <td>Direct Response Agent (Tầng 2): bypass phản hồi trực tiếp cho chitchat/Out-of-Scope bằng LLM. Hiện tạm giữ tại <code>tools/answer_directly.py</code>, sẽ di chuyển và refactor thành Agent khi triển khai Bước 3.</td>
+                        <td><code>agents/chitchat.py</code> [Đã hoàn thành]</td>
+                        <td>Chitchat Agent (Tầng 2): Phản hồi xã giao chào hỏi hoặc câu hỏi ngoài phạm vi nghiệp vụ pháp lý bằng LLM để tinh tế hướng người dùng quay lại chuyên môn.</td>
                     </tr>
                     <tr>
                         <td><strong>1.6c</strong></td>
@@ -347,13 +353,13 @@
                     </tr>
                     <tr>
                         <td><strong>1.11</strong></td>
-                        <td><code>agents/law_tax.py</code></td>
-                        <td>Hiện thực <strong>Tax Law Agent</strong> chuyên sâu về Luật Thuế Việt Nam làm Agent bản mẫu.</td>
+                        <td><code>agents/law_tax.py</code> [Đã hoàn thành]</td>
+                        <td>Hiện thực <strong>Tax Law Agent</strong> chuyên sâu về Luật Thuế Việt Nam, sử dụng các Kỹ năng nghiệp vụ để tra cứu, kiểm tra hiệu lực và phân tích sửa đổi.</td>
                     </tr>
                     <tr>
                         <td><strong>1.12</strong></td>
-                        <td><strong>Verify</strong></td>
-                        <td>Viết kịch bản kiểm thử trục dọc: nhận câu hỏi thuế -> gọi Tax Agent -> tra cứu Neo4j -> xuất kết quả JSON đúng schema.</td>
+                        <td><strong>Verify</strong> [Đã hoàn thành]</td>
+                        <td>Viết kịch bản kiểm thử trục dọc (verify_agents.py) chạy tích hợp và xác minh cấu trúc dữ liệu đầu ra của ChitchatAgent, QueryReformAgent và TaxLawAgent.</td>
                     </tr>
                 </tbody>
             </table>
@@ -367,7 +373,7 @@
                     <div class="timeline-title">Bước 2: Mở rộng Domain & Query Reform Agent</div>
                     <div class="timeline-content">
                         • <code>agents/law_land.py</code>: Hiện thực Land Law Agent (Luật Đất đai) theo khuôn mẫu Tax Law Agent.<br>
-                        • <code>agents/query_reform.py</code>: Hiện thực Query Reformulation Agent tối ưu truy vấn, NER và đánh giá độ rõ câu hỏi.
+                        • <code>agents/query_reform.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Hiện thực Query Reformulation Agent tối ưu truy vấn, sửa chính tả và trích xuất thực thể.
                     </div>
                 </div>
                 <div class="timeline-item">
@@ -376,7 +382,7 @@
                     <div class="timeline-content">
                         • <code>orchestrator.py</code>: Coordinator Agent thực hiện Intent Classification, Effort-Scaling, Routing và Payload Pruning.<br>
                         • <code>graph.py</code>: Định nghĩa StateGraph LangGraph kết nối các nodes và cấu hình conditional edges (fan-out song song).<br>
-                        • <code>agents/direct_response.py</code>: Direct Response Agent (Tầng 2) xử lý bypass phản hồi nhanh cho câu hỏi chitchat/out-of-scope bằng LLM.<br>
+                        • <code>agents/chitchat.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Chitchat Agent (Tầng 2) xử lý phản hồi nhanh cho câu hỏi chitchat/out-of-scope bằng LLM.<br>
                         • <code>Clarification Gate</code>: Thiết lập cơ chế hỏi lại ở Coordinator khi confidence_score &lt; 0.75.
                     </div>
                 </div>

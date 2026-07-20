@@ -31,7 +31,7 @@ MODEL_ORCHESTRATOR_GPT = "gpt-4o-mini"
 MODEL_SUB_AGENT_GPT = "gpt-4o-mini"
 GITHUB_MODELS_ENDPOINT = "https://models.inference.ai.azure.com"
 
-MODEL_ORCHESTRATOR_GEMINI = "gemini-2.0-flash-lite"
+MODEL_ORCHESTRATOR_GEMINI = "gemini-3.5-flash"
 MODEL_SUB_AGENT_GEMINI = "gemini-3.5-flash"
 MODEL_EMBEDDING_GEMINI = "gemini-embedding-001"
 DEFAULT_PROVIDER = os.getenv("LLM_PROVIDER", "openai")
