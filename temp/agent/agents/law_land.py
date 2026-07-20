@@ -96,6 +96,8 @@ class LandLawAgent(BaseAgent):
     def run(self, state: AgentState) -> Dict[str, Any]:
         """Thực thi nghiệp vụ tra cứu, phân tích và soạn thảo câu trả lời luật Đất đai."""
         query_text = state.get("refined_query") or state.get("raw_query", "")
+        human_feedback = state.get("human_feedback", "")
+        loop_step = state.get("loop_step", 0)
         
         # 1. Gọi Kỹ năng Tra cứu & Định vị Văn bản (Legal Search & Retrieval)
         try:
@@ -130,6 +132,14 @@ class LandLawAgent(BaseAgent):
             f"Câu hỏi của người dùng: {query_text}\n\n"
             f"Dữ liệu pháp luật hỗ trợ tra cứu:\n{context_str}\n"
         )
+        
+        # Đính kèm feedback sửa lỗi từ Verifier nếu đây là lượt chạy sửa đổi
+        if loop_step > 0 and human_feedback:
+            user_content += (
+                f"\n\n=== PHẢN HỒI YÊU CẦU CHỈNH SỬA TỪ KIỂM SOÁT VIÊN (LƯỢT #{loop_step}) ===\n"
+                f"Báo cáo nháp trước đó của bạn chưa đạt yêu cầu do: {human_feedback}\n"
+                f"Hãy điều chỉnh và sửa đổi nội dung câu trả lời nháp của bạn để khắc phục hoàn toàn lỗi trên."
+            )
         
         messages = [
             {"role": "system", "content": system_instruction},

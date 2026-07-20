@@ -38,7 +38,7 @@ GITHUB_MODELS_ENDPOINT = "https://models.inference.ai.azure.com"
 
 MODEL_ORCHESTRATOR_GEMINI = "gemini-3.5-flash"
 MODEL_SUB_AGENT_GEMINI = "gemini-3.5-flash"
-MODEL_EMBEDDING_GEMINI = "gemini-embedding-001"
+MODEL_EMBEDDING_GEMINI = "text-embedding-004"
 DEFAULT_PROVIDER = os.getenv("LLM_PROVIDER", "openai")
 
 # --- Cấu hình Neo4j Database ---

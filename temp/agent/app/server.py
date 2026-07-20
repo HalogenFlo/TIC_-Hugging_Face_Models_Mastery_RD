@@ -17,6 +17,18 @@ from memory.memory_store import sync_long_term_memory, load_user_profile
 PORT = 8000
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
+def merge_state(current_state: dict, update: dict) -> dict:
+    """Gộp state thủ công tương thích với các reducer định nghĩa trong state.py."""
+    new_state = dict(current_state)
+    for key, val in update.items():
+        if key in ["detected_domains", "conflicts", "citations"]:
+            new_state[key] = (new_state.get(key) or []) + (val or [])
+        elif key in ["domain_outputs", "evaluation"]:
+            new_state[key] = {**(new_state.get(key) or {}), **(val or {})}
+        else:
+            new_state[key] = val
+    return new_state
+
 class WebUIRequestHandler(http.server.SimpleHTTPRequestHandler):
     """Handler xử lý phục vụ trang chủ index.html và API endpoint chat."""
 
@@ -76,7 +88,7 @@ class WebUIRequestHandler(http.server.SimpleHTTPRequestHandler):
                 for output in app.stream(state):
                     for node_name, node_output in output.items():
                         nodes_executed.append(node_name)
-                        final_state = {**final_state, **node_output}
+                        final_state = merge_state(final_state, node_output)
                 
                 # 3. Đồng bộ bộ nhớ dài hạn nếu tư vấn thành công và có câu trả lời
                 if final_state.get("effort_level") != "clarification" and final_state.get("draft_answer"):

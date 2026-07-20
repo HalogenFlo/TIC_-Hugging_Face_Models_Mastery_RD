@@ -37,7 +37,9 @@ def execute_verifier(draft_answer: str, query_text: str, provider: str = DEFAULT
     try:
         model = get_ai_model(MODEL_SUB_AGENT_GEMINI, provider=provider)
         raw_output = model.generate(messages, response_schema=VerifierOutput)
-        parsed = VerifierOutput.model_validate_json(raw_output)
+        # Làm sạch chuỗi markdown code block nếu có
+        clean_json = raw_output.replace("```json", "").replace("```", "").strip()
+        parsed = VerifierOutput.model_validate_json(clean_json)
         return parsed.model_dump()
     except Exception as e:
         print(f"[WARNING] Trình Verifier gặp lỗi: {e}. Tự động phê duyệt bypass.")

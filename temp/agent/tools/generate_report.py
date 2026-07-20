@@ -51,8 +51,8 @@ class MarkdownFormatter(BaseReportFormatter):
             md.append("Không có trích dẫn nguồn.\n")
         else:
             for i, cite in enumerate(citations, 1):
-                citation_name = cite.get("citation", cite.get("unit_id", "Trích dẫn"))
-                text = cite.get("text", "Không có nội dung text.")
+                citation_name = cite.get("raw_citation", "Trích dẫn")
+                text = cite.get("correct_text", "Không có nội dung text.")
                 md.append(f"{i}. **{citation_name}**:\n   > {text}\n")
                 
         return "\n".join(md)
@@ -117,8 +117,8 @@ class HTMLFormatter(BaseReportFormatter):
         else:
             html.append("    <ol>")
             for cite in citations:
-                citation_name = cite.get("citation", cite.get("unit_id", "Trích dẫn"))
-                text = cite.get("text", "Không có nội dung text.")
+                citation_name = cite.get("raw_citation", "Trích dẫn")
+                text = cite.get("correct_text", "Không có nội dung text.")
                 html.append(f"        <li><strong>{citation_name}</strong>:<blockquote>{text}</blockquote></li>")
             html.append("    </ol>")
             
