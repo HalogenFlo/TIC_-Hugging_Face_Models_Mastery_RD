@@ -27,7 +27,7 @@ class AgentState(TypedDict):
     refined_query: str
     
     # --- ĐIỀU PHỐI (Orchestrator) ---
-    effort_level: str                                     # "bypass" | "simple" | "complex"
+    effort_level: str                                     # "bypass" | "clarification" | "simple" | "complex"
     clarification_count: int     
     detected_domains: Annotated[List[str], merge_list]
     

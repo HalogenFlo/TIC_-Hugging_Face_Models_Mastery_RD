@@ -176,6 +176,106 @@
                     </p>
                 </div>
             </section>
+
+            <!-- SECTION 5: LAND LAW AGENT -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-accent);">5. Tác nhân Nghiệp vụ Luật Đất đai: LandLawAgent</h2>
+                <p>Nằm tại đường dẫn: <code>agents/law_land.py</code>. Đây là tác nhân chuyên sâu thứ tư, chịu trách nhiệm trực tiếp phân tích và tư vấn các nghiệp vụ liên quan đến Luật Đất đai Việt Nam.</p>
+
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-accent);">
+                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>LandLawAgent(BaseAgent)</code></h3>
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Goal & Context:</strong> Trợ lý tư vấn Luật Đất đai Việt Nam chuyên nghiệp, đưa ra câu trả lời nháp chính xác dựa trên căn cứ pháp lý và hiệu lực.</li>
+                        <li><strong>Task Boundary:</strong> Chỉ tư vấn và trả lời các nội dung liên quan đến Luật Đất đai Việt Nam. Trích dẫn đúng định dạng <code>[Số hiệu - Điều khoản]</code>. Tuyệt đối không tự bịa đặt tài liệu.</li>
+                        <li><strong>Skills & Tools:</strong> Phân quyền gọi Kỹ năng tra cứu (<code>search_retrieval</code>) và phân tích sâu điều luật (<code>analysis</code>).</li>
+                        <li><strong>Output Schema (LandLawOutput):</strong>
+                            <ul>
+                                <li><code>draft_answer</code> (str): Nội dung câu trả lời nháp chi tiết về Đất đai kèm các điểm trích dẫn luật định dạng chuẩn.</li>
+                                <li><code>citations</code> (List[CitationItem]): Danh sách các trích dẫn cấu trúc chứa: <code>norm_code</code>, <code>citation_name</code>, và <code>comp_id</code>.</li>
+                                <li><code>requires_clarification</code> (bool): Đặt thành True nếu thiếu thông tin đầu vào từ người dùng (như mốc thời gian, loại đất, mục đích sử dụng...) để đưa ra kết luận.</li>
+                                <li><code>clarification_prompt</code> (str, optional): Câu hỏi làm rõ nghiệp vụ chi tiết gửi tới người dùng.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4 style="color: #fff;">Hàm thành viên:</h4>
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><code>_process_search_item(item)</code> (Pure Function): 
+                            Trích xuất thông tin trích dẫn, gọi tiếp Kỹ năng Phân tích sâu để lấy thông tin trạng thái hiệu lực thực tế cùng lịch sử sửa đổi đệ quy của điều khoản đất đai đó trên Neo4j.
+                        </li>
+                        <li><code>run(state)</code>:
+                            Thực hiện gọi <code>execute_search_retrieval()</code>, sau đó dùng <code>map()</code> xử lý song song các kết quả thông qua <code>_process_search_item()</code>. Cuối cùng, tổng hợp toàn bộ nội dung văn bản gốc và lịch sử sửa đổi thành ngữ cảnh hoàn chỉnh truyền cho LLM suy luận. Tích hợp Chiến lược trả lời phân nhánh theo điều kiện thời gian.
+                        </li>
+                    </ul>
+
+                    <h4 style="color: #fff;">Cơ chế bảo vệ (Fallback robustness):</h4>
+                    <p style="color: var(--text-secondary); line-height: 1.8;">
+                        Toàn bộ lời gọi được bao bọc bằng khối <code>try-except</code>. Khi có lỗi (lỗi mạng, hết quota LLM...), Agent in thông báo chi tiết lỗi ra console và trả về cấu trúc fallback an toàn kèm các trích dẫn sơ bộ thu thập được để bảo đảm hệ thống không bị sập.
+                    </p>
+                </div>
+            </section>
+
+            <!-- SECTION 6: ORCHESTRATOR AGENT -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-indigo);">6. Tác nhân Điều phối: OrchestratorAgent</h2>
+                <p>Nằm tại đường dẫn: <code>orchestrator.py</code> ở thư mục gốc. Đây là tác nhân đầu não chịu trách nhiệm phân loại ý định người dùng và định tuyến câu hỏi nghiệp vụ.</p>
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-indigo);">
+                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>OrchestratorAgent</code></h3>
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Goal & Context:</strong> Phân loại ý định thô của người dùng thành chitchat (bypass) hoặc câu hỏi nghiệp vụ (legal) để định tuyến sang các domain.</li>
+                        <li><strong>Task Boundary:</strong> Chỉ phân loại và định tuyến lĩnh vực luật. Tuyệt đối không tự trả lời nghiệp vụ pháp luật.</li>
+                        <li><strong>Skills & Tools:</strong> Không sử dụng Kỹ năng hay Công cụ nghiệp vụ nào (<code>[]</code>).</li>
+                        <li><strong>Output Schema (OrchestratorOutput):</strong>
+                            <ul>
+                                <li><code>effort_level</code> (str): "bypass" hoặc "legal".</li>
+                                <li><code>detected_domains</code> (List[str]): Danh sách các domains phát hiện được ("tax", "land").</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 7: CONFLICT RESOLUTION AGENT -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-warning);">7. Tác nhân Giải quyết Xung đột: ConflictResolutionAgent</h2>
+                <p>Nằm tại đường dẫn: <code>agents/conflict.py</code>. Tác nhân chuyên biệt phát hiện và xử lý mâu thuẫn chéo giữa các quy định pháp luật dựa trên Điều 156 Luật Ban hành văn bản quy phạm pháp luật.</p>
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-warning);">
+                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>ConflictResolutionAgent(BaseAgent)</code></h3>
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Goal & Context:</strong> Phát hiện mâu thuẫn pháp luật dựa theo cấp bậc, thời gian ban hành hoặc chuyên ngành. Đưa ra nguyên tắc áp dụng cụ thể.</li>
+                        <li><strong>Task Boundary:</strong> Chỉ phát hiện mâu thuẫn và đề xuất hướng giải quyết. Không soạn thảo toàn văn báo cáo cuối cùng.</li>
+                        <li><strong>Skills & Tools:</strong> Phân quyền sử dụng kỹ năng `search_retrieval` và `reporting`.</li>
+                        <li><strong>Output Schema (ConflictOutput):</strong>
+                            <ul>
+                                <li><code>has_conflict</code> (bool): Đánh giá xem có tồn tại mâu thuẫn nào không.</li>
+                                <li><code>conflicts</code> (List[LegalConflict]): Danh sách các mâu thuẫn chi tiết (loại mâu thuẫn, mô tả, quy tắc xử lý, văn bản được áp dụng).</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION 8: SYNTHESIS AGENT -->
+            <section style="margin-bottom: 4rem;">
+                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-success);">8. Tác nhân Tổng hợp Báo cáo: SynthesisAgent</h2>
+                <p>Nằm tại đường dẫn: <code>agents/synthesis.py</code>. Tác nhân gộp câu trả lời nháp từ các tác nhân con và kết quả giải quyết xung đột thành báo cáo tư vấn chính thức gửi cho người dùng.</p>
+                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-success);">
+                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>SynthesisAgent(BaseAgent)</code></h3>
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
+                        <li><strong>Goal & Context:</strong> Biên soạn báo cáo tư vấn pháp lý chính thức định dạng Markdown, giải thích rõ các điểm xung đột và nguyên tắc áp dụng.</li>
+                        <li><strong>Task Boundary:</strong> Chỉ tổng hợp dữ liệu đầu vào. Không tự ý sáng tạo thông tin ngoài tài liệu bổ trợ.</li>
+                        <li><strong>Skills & Tools:</strong> Phân quyền gọi Kỹ năng đóng gói và kiểm chứng báo cáo (<code>reporting</code>).</li>
+                        <li><strong>Output Schema (SynthesisOutput):</strong>
+                            <ul>
+                                <li><code>final_answer</code> (str): Báo cáo pháp lý chính thức đã kiểm chứng và định dạng Markdown/HTML.</li>
+                                <li><code>all_citations</code> (List[CitationItem]): Toàn bộ danh mục trích dẫn đã được kiểm chứng.</li>
+                                <li><code>requires_clarification</code> (bool): Cờ báo hiệu cần làm rõ.</li>
+                                <li><code>clarification_prompt</code> (str, optional): Nội dung câu hỏi làm rõ.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </section>
         </main>
     </div>
 </body>

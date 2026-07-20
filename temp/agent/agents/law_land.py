@@ -1,4 +1,4 @@
-# Chức năng: TaxLawAgent tư vấn chuyên sâu về các vấn đề liên quan đến luật Thuế Việt Nam.
+# Chức năng: LandLawAgent tư vấn chuyên sâu về các vấn đề liên quan đến luật Đất đai Việt Nam.
 
 import json
 from typing import Dict, Any, List, Optional
@@ -15,27 +15,27 @@ from config import (
 )
 
 class CitationItem(BaseModel):
-    norm_code: str = Field(description="Số hiệu văn bản pháp lý (ví dụ: 103/2014/TT-BTC)")
+    norm_code: str = Field(description="Số hiệu văn bản pháp lý (ví dụ: 45/2013/QH13)")
     citation_name: str = Field(description="Tên điều khoản trích dẫn (ví dụ: Điều 10)")
     comp_id: Optional[str] = Field(None, description="ID thành phần tương ứng nếu có")
 
-class TaxLawOutput(BaseModel):
+class LandLawOutput(BaseModel):
     draft_answer: str = Field(description="Câu trả lời nháp chi tiết bằng tiếng Việt, trích dẫn chính xác luật theo dạng [Số hiệu - Điều khoản].")
     citations: List[CitationItem] = Field(description="Danh sách các trích dẫn đã sử dụng.")
     requires_clarification: bool = Field(description="Đặt thành True nếu thiếu thông tin đầu vào từ người dùng để đưa ra kết luận pháp lý chính xác.")
     clarification_prompt: Optional[str] = Field(None, description="Câu hỏi làm rõ gửi đến người dùng nếu requires_clarification = True.")
 
-class TaxLawAgent(BaseAgent):
-    """Tác nhân tư vấn chuyên sâu Luật Thuế Việt Nam (Tầng 2)."""
+class LandLawAgent(BaseAgent):
+    """Tác nhân tư vấn chuyên sâu Luật Đất đai Việt Nam (Tầng 2)."""
     
     def __init__(self, provider: str = DEFAULT_PROVIDER):
         goal_context = (
-            "Bạn là một chuyên gia tư vấn pháp luật Thuế Việt Nam giàu kinh nghiệm. Nhiệm vụ của bạn là nhận "
+            "Bạn là một chuyên gia tư vấn pháp luật Đất đai Việt Nam giàu kinh nghiệm. Nhiệm vụ của bạn là nhận "
             "câu hỏi của người dùng và các thông tin luật được cung cấp từ CSDL để đưa ra câu trả lời nháp có "
             "căn cứ pháp lý rõ ràng, chính xác và cập nhật hiệu lực mới nhất."
         )
         task_boundary = (
-            "Chỉ tư vấn và trả lời các nội dung liên quan đến Luật Thuế Việt Nam. Phải trích dẫn chính xác "
+            "Chỉ tư vấn và trả lời các nội dung liên quan đến Luật Đất đai Việt Nam. Phải trích dẫn chính xác "
             "các số hiệu văn bản và điều khoản được cung cấp trong phần tài liệu hỗ trợ theo dạng [Số hiệu - Điều khoản]. "
             "Tuyệt đối không tự bịa đặt (hallucinate) các số hiệu văn bản hoặc nội dung điều luật không có trong tài liệu hỗ trợ."
         )
@@ -45,7 +45,7 @@ class TaxLawAgent(BaseAgent):
             goal_context=goal_context,
             task_boundary=task_boundary,
             skills_tools=skills_tools,
-            output_schema=TaxLawOutput
+            output_schema=LandLawOutput
         )
         self.provider = provider
 
@@ -94,14 +94,14 @@ class TaxLawAgent(BaseAgent):
         return {"citation": citation, "context": context}
 
     def run(self, state: AgentState) -> Dict[str, Any]:
-        """Thực thi nghiệp vụ tra cứu, phân tích và soạn thảo câu trả lời luật Thuế."""
+        """Thực thi nghiệp vụ tra cứu, phân tích và soạn thảo câu trả lời luật Đất đai."""
         query_text = state.get("refined_query") or state.get("raw_query", "")
         
         # 1. Gọi Kỹ năng Tra cứu & Định vị Văn bản (Legal Search & Retrieval)
         try:
             search_results = execute_search_retrieval(query_text, provider=self.provider, limit=3)
         except Exception as se:
-            print(f"[WARNING] execute_search_retrieval failed in TaxLawAgent: {se}")
+            print(f"[WARNING] execute_search_retrieval failed in LandLawAgent: {se}")
             search_results = []
             
         # 2. Xử lý từng kết quả tra cứu bằng Kỹ năng Phân tích sâu (Deep Analysis)
@@ -146,7 +146,7 @@ class TaxLawAgent(BaseAgent):
             return parsed.model_dump()
         except Exception as e:
             # Fallback an toàn nếu LLM hoặc parse lỗi
-            print(f"[ERROR] LLM generation failed in TaxLawAgent: {e}")
+            print(f"[ERROR] LLM generation failed in LandLawAgent: {e}")
             import traceback
             traceback.print_exc()
             return {

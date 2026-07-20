@@ -372,7 +372,7 @@
                     <div class="timeline-marker"></div>
                     <div class="timeline-title">Bước 2: Mở rộng Domain & Query Reform Agent</div>
                     <div class="timeline-content">
-                        • <code>agents/law_land.py</code>: Hiện thực Land Law Agent (Luật Đất đai) theo khuôn mẫu Tax Law Agent.<br>
+                        • <code>agents/law_land.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Hiện thực Land Law Agent (Luật Đất đai) theo khuôn mẫu Tax Law Agent.<br>
                         • <code>agents/query_reform.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Hiện thực Query Reformulation Agent tối ưu truy vấn, sửa chính tả và trích xuất thực thể.
                     </div>
                 </div>
@@ -380,31 +380,31 @@
                     <div class="timeline-marker"></div>
                     <div class="timeline-title">Bước 3: Bộ điều phối Orchestrator & LangGraph Flow</div>
                     <div class="timeline-content">
-                        • <code>orchestrator.py</code>: Coordinator Agent thực hiện Intent Classification, Effort-Scaling, Routing và Payload Pruning.<br>
-                        • <code>graph.py</code>: Định nghĩa StateGraph LangGraph kết nối các nodes và cấu hình conditional edges (fan-out song song).<br>
+                        • <code>orchestrator.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Coordinator Agent thực hiện Intent Classification, Effort-Scaling, Routing và Payload Pruning.<br>
+                        • <code>graph.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Định nghĩa StateGraph LangGraph kết nối các nodes và cấu hình đối chiếu song song.<br>
                         • <code>agents/chitchat.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Chitchat Agent (Tầng 2) xử lý phản hồi nhanh cho câu hỏi chitchat/out-of-scope bằng LLM.<br>
-                        • <code>Clarification Gate</code>: Thiết lập cơ chế hỏi lại ở Coordinator khi confidence_score &lt; 0.75.
+                        • <code>Clarification Gate</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Thiết lập cơ chế hỏi lại ở Coordinator dựa theo cấu hình CLARIFICATION_THRESHOLD & MAX_CLARIFICATION_TURNS.
                     </div>
                 </div>
                 <div class="timeline-item">
                     <div class="timeline-marker"></div>
                     <div class="timeline-title">Bước 4: Tối ưu bộ nhớ & Chống phình context (Context & Memory)</div>
                     <div class="timeline-content">
-                        • <code>memory/compaction.py</code>: Compaction Engine nén context khi vượt 10,000 tokens.<br>
-                        • <code>memory/memory_store.py</code>: Đồng bộ hóa session memory lên Redis và lưu trữ thông tin hồ sơ rút gọn (Facts & Preferences) cá nhân hóa lâu dài vào PostgreSQL.<br>
-                        • <code>Tool-Result Clearing</code>: Thêm node tự động xóa raw kết quả của tool trong LangGraph.
+                        • <code>memory/compaction.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Compaction Engine nén context khi vượt 10,000 tokens.<br>
+                        • <code>memory/memory_store.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Đồng bộ hóa session memory lên Redis và lưu trữ thông tin hồ sơ rút gọn (Facts & Preferences) cá nhân hóa lâu dài vào PostgreSQL.<br>
+                        • <code>Tool-Result Clearing</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Thêm node tự động dọn dẹp raw kết quả của tool trong LangGraph.
                     </div>
                 </div>
                   <div class="timeline-item">
                       <div class="timeline-marker"></div>
                       <div class="timeline-title">Bước 5: Vòng lặp phản hồi & MCP Actions</div>
                       <div class="timeline-content">
-                          • <code>agents/conflict.py</code>: Conflict Resolution Agent phát hiện và xử lý mâu thuẫn luật.<br>
-                          • <code>agents/synthesis.py</code>: Synthesis & Validation Agent soạn draft phản hồi.<br>
-                          • <code>tools/validate_citations.py</code>: Tool đối chiếu chéo trích dẫn với nguồn gốc chống hallucination.<br>
-                          • <code>loop_controller.py</code>: Xây dựng Loop Controller, Verifier (tối đa 5 vòng lặp) và Human Checkpoint.<br>
+                          • <code>agents/conflict.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Conflict Resolution Agent phát hiện và xử lý mâu thuẫn luật.<br>
+                          • <code>agents/synthesis.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Synthesis & Validation Agent soạn draft phản hồi.<br>
+                          • <code>tools/validate_citations.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Tool đối chiếu chéo trích dẫn với nguồn gốc chống hallucination.<br>
+                          • <code>loop_controller.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Xây dựng Loop Controller, Verifier (tối đa 5 vòng lặp) và Human Checkpoint.<br>
                           • <code>tools/generate_report.py</code>: Bổ sung PDFFormatter và ExcelFormatter cho Strategy Pattern.<br>
-                          • <code>main.py</code>: Entry point khởi chạy toàn bộ hệ thống Multi-Agent.
+                          • <code>app/server.py</code>: <span class="badge badge-success" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; margin-right: 0.3rem;">[Đã hoàn thành]</span> Entry point khởi chạy ứng dụng Web UI và Backend Server.
                       </div>
                   </div>
             </div>

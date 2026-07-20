@@ -103,9 +103,13 @@
 │   ├── compaction.py             # Compaction Engine nén context
 │   └── memory_store.py           # Redis (session) + PostgreSQL (personal)
 │
+├── 📂 app/                       # GIAO DIỆN WEB UI VÀ BACKEND API
+│   ├── server.py                 # Web Server phục vụ tĩnh và API chat
+│   └── index.html                # Giao diện người dùng Web UI
+│
 ├── loop_controller.py            # Loop Controller + Verifier + Human Checkpoint
 ├── orchestrator.py               # Coordinator logic (Intent, Scaling, Routing)
-└── main.py                       # Entry point chạy hệ thống</pre>
+└── graph.py                      # Đồ thị StateGraph của LangGraph</pre>
             </section>
 
             <!-- PHẦN 2: CONFIG.PY -->
