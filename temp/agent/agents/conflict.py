@@ -28,19 +28,17 @@ class ConflictResolutionAgent(BaseAgent):
     def __init__(self, provider: str = DEFAULT_PROVIDER):
         goal_context = (
             "Bạn là chuyên gia giải quyết mâu thuẫn pháp lý Việt Nam. Nhiệm vụ của bạn là đọc các câu trả lời nháp "
-            "và ngữ cảnh pháp luật thu thập được từ các tác nhân chuyên môn khác để phát hiện xem có sự mâu thuẫn "
-            "nào giữa các văn bản pháp luật hay không, chỉ ra lý do mâu thuẫn và đưa ra quyết định áp dụng văn bản nào "
-            "dựa trên các nguyên tắc chuẩn mực của pháp luật Việt Nam (đặc biệt là Điều 156 Luật Ban hành văn bản quy phạm pháp luật).\n"
-            "Các nguyên tắc giải quyết mâu thuẫn chủ đạo:\n"
-            "1. Nguyên tắc cấp bậc hiệu lực: Văn bản do cơ quan cấp trên ban hành có hiệu lực cao hơn (ví dụ: Luật > Nghị định > Thông tư).\n"
-            "2. Nguyên tắc thời gian: Các văn bản do cùng một cơ quan ban hành quy định về cùng một vấn đề thì áp dụng văn bản ban hành sau (Luật mới thay thế luật cũ).\n"
-            "3. Nguyên tắc chuyên ngành: Ưu tiên áp dụng quy định của luật chuyên ngành so với luật chung (Luật riêng > Luật chung).\n"
-            "4. Nguyên tắc xác định giá tính thuế: Nếu có sự chênh lệch giữa giá trị giao dịch thực tế trên hợp đồng và bảng giá nhà nước quy định, "
-            "áp dụng mức giá cao hơn để tính thuế."
+            "và ngữ cảnh pháp luật từ các tác nhân chuyên môn để phát hiện xem có sự mâu thuẫn/xung đột nào giữa các văn bản pháp luật hay không, "
+            "và đưa ra quyết định ưu tiên áp dụng văn bản nào dựa trên Điều 156 Luật Ban hành văn bản quy phạm pháp luật 2015:\n"
+            "1. Cấp bậc hiệu lực: Văn bản do cơ quan cấp trên ban hành ưu tiên áp dụng (Luật > Nghị định > Thông tư).\n"
+            "2. Mốc thời gian ban hành: Nếu cùng cấp ban hành về cùng vấn đề ➔ Áp dụng văn bản ban hành sau (Mới thay thế Cũ).\n"
+            "3. Chuyên ngành vs Chung: Ưu tiên áp dụng quy định của Luật chuyên ngành so với Luật chung.\n"
+            "4. Giá tính thuế: Nếu giá hợp đồng thấp hơn Bảng giá đất/giá Nhà nước quy định ➔ Áp dụng mức giá Nhà nước để tính nộp thuế.\n"
+            "5. Xung đột mốc thời gian giao dịch: Nếu sự việc xảy ra ở thời điểm quá khứ (năm 2017...) ➔ Ưu tiên áp dụng văn bản đang có hiệu lực tại đúng thời điểm 2017 đó."
         )
         task_boundary = (
-            "Chỉ thực hiện phát hiện mâu thuẫn và chỉ ra hướng giải quyết. "
-            "Không tự soạn thảo báo cáo tư vấn cuối cùng hay trả lời ngoài phạm vi mâu thuẫn."
+            "Chỉ âm thầm xử lý mâu thuẫn và cung cấp quyết định ưu tiên cho SynthesisAgent. "
+            "Tuyệt đối không tự mình soạn thảo báo cáo tư vấn cuối cùng."
         )
         skills_tools = ["search_retrieval", "reporting"]
         

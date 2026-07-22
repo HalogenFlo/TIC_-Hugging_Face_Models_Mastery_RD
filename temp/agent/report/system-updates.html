@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nâng Cấp Hệ Thống & Tính Năng Mới - LegalMAS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Sidebar -->
+        <aside class="sidebar">
+            <div class="brand-section">
+                <div class="brand-logo">L</div>
+                <div class="brand-name">LegalMAS Docs</div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html">
+                        <span class="nav-icon">📊</span>
+                        <span>Sơ đồ & Lộ trình</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="system-updates.html">
+                        <span class="nav-icon">🚀</span>
+                        <span>Nâng cấp & Tính năng Mới</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="agents-reference.html">
+                        <span class="nav-icon">🤖</span>
+                        <span>Chi tiết Tác nhân (Agents)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="tools-reference.html">
+                        <span class="nav-icon">🛠️</span>
+                        <span>Chi tiết Tools & Skills</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="core-system.html">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Cấu hình Cốt lõi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="neo4j-schema.html">
+                        <span class="nav-icon">🗄️</span>
+                        <span>Kiến trúc Neo4j</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="decisions.html">
+                        <span class="nav-icon">📜</span>
+                        <span>Quyết định & Ràng buộc</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">🚀 Nâng Cấp Hệ Thống & Tính Năng Mới</h1>
+                    <p class="page-subtitle">Nhật ký cập nhật chi tiết các tính năng, sửa lỗi UI và cơ chế xuất file PDF mới nhất</p>
+                </div>
+                <div class="status-badge status-stable">Phiên bản 2.5.0</div>
+            </header>
+
+            <div class="content-body">
+                <!-- Feature 1: PDF Export -->
+                <section class="doc-section">
+                    <h2 class="section-title">1. Tính Năng Xuất Báo Cáo PDF Mở Tab Mới (`target="_blank"`)</h2>
+                    <div class="card">
+                        <p><strong>Cơ chế hoạt động:</strong> Khi người dùng yêu cầu <em>"xuất báo cáo"</em> hoặc <em>"tải pdf"</em>, hệ thống tự động biên soạn bài tư vấn đầy đủ và sinh file báo cáo HTML/PDF lưu vào <code>app/exports/</code>.</p>
+                        <ul class="feature-list">
+                            <li><strong>Mở Tab mới (Không chuyển hướng Chat):</strong> Liên kết tải file gán thuộc tính <code>target="_blank"</code> giúp trang chat hiện tại giữ nguyên 100%.</li>
+                            <li><strong>Mẫu Báo Cáo Chuẩn A4 Văn Phòng:</strong> Tích hợp phông chữ <code>Segoe UI / Roboto</code>, Tiêu đề Quốc hiệu trang trọng, và thanh công cụ bật tự động cửa sổ <code>window.print()</code> (Save as PDF).</li>
+                            <li><strong>Sửa lỗi vỡ định dạng Markdown:</strong> Tích hợp bộ parser <code>convert_markdown_to_html</code> tự động biến các Bảng biểu Markdown (như biểu thuế lũy tiến) thành bảng HTML <code>.legal-table</code> kẻ viền chuẩn mực.</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Feature 2: Response Strategy -->
+                <section class="doc-section">
+                    <h2 class="section-title">2. Chiến Lược Phân Loại Trả Lời & Trích Dẫn Chuẩn</h2>
+                    <div class="card">
+                        <ul class="feature-list">
+                            <li><strong>Mặc định Ngắn Gọn:</strong> Trả lời cực kỳ ngắn gọn, đi thẳng vào đáp án trọng tâm khi hỏi thông thường.</li>
+                            <li><strong>Full Report Mode:</strong> Trình bày bài tư vấn đầy đủ, chuyên nghiệp, đẹp mắt như ChatGPT khi có yêu cầu <em>"xuất báo cáo"</em>.</li>
+                            <li><strong>Quy tắc Thời gian:</strong> Mặc định 100% áp dụng <strong>Luật Mới Nhất Hiện Hành</strong> nếu người dùng không nêu mốc thời gian.</li>
+                            <li><strong>Định dạng Trích dẫn Chuẩn:</strong> Cấu trúc <code>[Số hiệu văn bản - Điều X - Khoản Y - Điểm Z]</code>.</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Feature 3: Long-term User Profile -->
+                <section class="doc-section">
+                    <h2 class="section-title">3. Bộ Nhớ Hồ Sơ Khách Hàng Dài Hạn (User Profile)</h2>
+                    <div class="card">
+                        <p>Lưu giữ <code>globalUserProfile</code> vĩnh viễn trong <code>localStorage</code> và CSDL SQLite <code>tic_personal_memory.db</code>. Bấm "+ Cuộc hội thoại mới" vẫn bảo tồn 100% dữ kiện hồ sơ khách hàng tích lũy.</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

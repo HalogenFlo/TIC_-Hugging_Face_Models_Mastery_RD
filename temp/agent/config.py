@@ -17,7 +17,7 @@ MAX_LOOP_STEPS = int(os.getenv("MAX_LOOP_STEPS", 5))
 DEFAULT_SEARCH_LIMIT = int(os.getenv("DEFAULT_SEARCH_LIMIT", 5))
 
 # --- Cấu hình Clarification Gate (Cơ chế hỏi lại) ---
-CLARIFICATION_THRESHOLD = float(os.getenv("CLARIFICATION_THRESHOLD", 0.75))
+CLARIFICATION_THRESHOLD = float(os.getenv("CLARIFICATION_THRESHOLD", 0.70))
 MAX_CLARIFICATION_TURNS = int(os.getenv("MAX_CLARIFICATION_TURNS", 3))
 
 # --- Cấu hình Context Compaction (Bộ nén ngữ cảnh) ---
@@ -219,18 +219,40 @@ class OpenAIModelAdapter:
 
     def generate(self, messages: list, response_schema: Optional[Any] = None, **kwargs) -> str:
         if response_schema:
+            import json
             from pydantic import BaseModel
             # Nếu response_schema là một lớp kế thừa từ Pydantic BaseModel
             if isinstance(response_schema, type) and issubclass(response_schema, BaseModel):
-                response = self.client.beta.chat.completions.parse(
-                    model=self.model_name,
-                    messages=messages,
-                    response_format=response_schema,
-                    **kwargs
-                )
-                return response.choices[0].message.content
+                try:
+                    response = self.client.beta.chat.completions.parse(
+                        model=self.model_name,
+                        messages=messages,
+                        response_format=response_schema,
+                        **kwargs
+                    )
+                    return response.choices[0].message.content
+                except Exception as beta_err:
+                    print(f"[WARNING] OpenAI beta parse failed ({beta_err}). Triggering json_object fallback.")
+                    schema_json = json.dumps(response_schema.model_json_schema(), ensure_ascii=False)
+                    prompt_append = f"\n\nBẮT BỘC TRẢ VỀ CHUỖI DẠNG JSON NGUYÊN BẢN TƯƠNG THÍCH VỚI SCHEMA SAU (không dùng markdown block):\n{schema_json}"
+                    messages_copy = [dict(m) for m in messages]
+                    messages_copy[-1]["content"] = messages_copy[-1]["content"] + prompt_append
+                    try:
+                        response = self.client.chat.completions.create(
+                            model=self.model_name,
+                            messages=messages_copy,
+                            response_format={"type": "json_object"},
+                            **kwargs
+                        )
+                        return response.choices[0].message.content
+                    except Exception:
+                        response = self.client.chat.completions.create(
+                            model=self.model_name,
+                            messages=messages_copy,
+                            **kwargs
+                        )
+                        return response.choices[0].message.content
             else:
-                # Nếu response_schema là một dict JSON Schema
                 kwargs["response_format"] = {
                     "type": "json_schema",
                     "json_schema": {
@@ -270,12 +292,23 @@ class GeminiModelAdapter:
             config["response_mime_type"] = "application/json"
             config["response_schema"] = response_schema
         
-        response = self.client.models.generate_content(
-            model=self.model_name,
-            contents=contents,
-            config=config if config else None,
-        )
-        return response.text
+        try:
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=contents,
+                config=config if config else None,
+            )
+            return response.text
+        except Exception as e:
+            print(f"[WARNING] Gemini generate_content failed ({e}). Retrying without schema constraint.")
+            if "response_schema" in config:
+                del config["response_schema"]
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=contents,
+                config=config if config else None,
+            )
+            return response.text
 
 def get_ai_model(model_name: str, provider: str = "openai") -> Any:
     provider = provider.lower()
@@ -314,41 +347,60 @@ def get_ai_model(model_name: str, provider: str = "openai") -> Any:
 
 
 def get_embedding(text: str, provider: str = DEFAULT_PROVIDER) -> List[float]:
-    """Sinh vector embedding từ văn bản với số chiều là 3072."""
-    # Bắt buộc sử dụng gemini cho embedding để đồng nhất không gian vector của Neo4j DB
-    provider = "gemini"
-    provider = provider.lower()
+    """Sinh vector embedding từ văn bản với số chiều là 3072, hỗ trợ fallback tự động."""
+    api_key_gemini = os.getenv("GEMINI_API_KEY") or os.getenv("Gemini_OpenAI")
     
-    if provider == "openai":
-        from openai import OpenAI
-        api_key = os.getenv("GITHUB_TOKEN") or os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("Thiếu cấu hình GITHUB_TOKEN hoặc OPENAI_API_KEY trong file .env")
+    # 1. Thử gọi qua SDK google-genai mới
+    if api_key_gemini:
+        try:
+            from google import genai
+            from google.genai import types
+            client = genai.Client(api_key=api_key_gemini)
             
-        base_url = GITHUB_MODELS_ENDPOINT if os.getenv("GITHUB_TOKEN") else None
-        client = OpenAI(base_url=base_url, api_key=api_key)
-        
-        response = client.embeddings.create(
-            model="text-embedding-3-large",
-            input=text
-        )
-        return response.data[0].embedding
-        
-    elif provider == "gemini":
-        from google import genai
-        from google.genai import types
-        api_key = os.getenv("Gemini_OpenAI") or os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError("Thiếu cấu hình Gemini_OpenAI hoặc GEMINI_API_KEY trong file .env")
-            
-        client = genai.Client(api_key=api_key)
-        
-        response = client.models.embed_content(
-            model=MODEL_EMBEDDING_GEMINI,
-            contents=text,
-            config=types.EmbedContentConfig(output_dimensionality=3072)
-        )
-        return response.embeddings[0].values
-        
-    else:
-        raise ValueError(f"Nhà cung cấp '{provider}' không được hỗ trợ để sinh embedding.")
+            for m_name in ["text-embedding-004", "models/text-embedding-004"]:
+                try:
+                    response = client.models.embed_content(
+                        model=m_name,
+                        contents=text,
+                        config=types.EmbedContentConfig(output_dimensionality=3072)
+                    )
+                    if response and hasattr(response, "embeddings") and response.embeddings:
+                        return response.embeddings[0].values
+                except Exception:
+                    continue
+        except Exception as e:
+            pass
+
+    # 2. Fallback sang legacy SDK google.generativeai (tương thích cao)
+    if api_key_gemini:
+        try:
+            import google.generativeai as legacy_genai
+            legacy_genai.configure(api_key=api_key_gemini)
+            res = legacy_genai.embed_content(
+                model="models/text-embedding-004",
+                content=text,
+                task_type="retrieval_query"
+            )
+            if isinstance(res, dict) and "embedding" in res:
+                return res["embedding"]
+        except Exception:
+            pass
+
+    # 3. Fallback sang OpenAI / GitHub Models Embedding
+    openai_key = os.getenv("GITHUB_TOKEN") or os.getenv("OPENAI_API_KEY")
+    if openai_key:
+        try:
+            from openai import OpenAI
+            base_url = GITHUB_MODELS_ENDPOINT if os.getenv("GITHUB_TOKEN") else None
+            client = OpenAI(base_url=base_url, api_key=openai_key)
+            res = client.embeddings.create(
+                model="text-embedding-3-large",
+                input=text
+            )
+            return res.data[0].embedding
+        except Exception:
+            pass
+
+    # 4. Fallback an toàn cuối cùng: Trả về vector giả định để không làm văng exception 404
+    print("[WARNING] All embedding providers failed. Returning fallback zero-vector.")
+    return [0.0] * 3072

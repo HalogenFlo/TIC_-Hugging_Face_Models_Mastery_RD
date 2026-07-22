@@ -39,6 +39,24 @@ def execute_reporting_and_validation(
         
         # 3. Kích hoạt định dạng báo cáo (generate_report)
         report_content = generate_report(report_data, format_type=format_type)
+        
+        # 3.1. Tự động xuất file báo cáo vật lý cho người dùng tải về máy nếu có yêu cầu
+        query_lower = raw_data.get("query", "").lower()
+        if any(k in query_lower for k in ["báo cáo", "pdf", "tải", "xuất"]):
+            import os
+            import time
+            exports_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "exports")
+            os.makedirs(exports_dir, exist_ok=True)
+            filename = f"bao_cao_phap_ly_{int(time.time())}.html"
+            filepath = os.path.join(exports_dir, filename)
+            
+            html_report = generate_report(report_data, format_type="html")
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(html_report)
+                
+            download_link = f"\n\n---\n<a href='/exports/{filename}' target='_blank' style='display: inline-block; padding: 10px 20px; background-color: #2563eb; color: white !important; font-weight: 600; border-radius: 6px; text-decoration: none; margin-top: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: all 0.2s;'>📥 Nhấn vào đây để Xuất & Tải File Báo Cáo PDF (Mở Tab Mới)</a>"
+            report_content = report_content + download_link
+            
         result["report_content"] = report_content
         
         # 4. Gửi SMTP email nếu được cung cấp recipient_email

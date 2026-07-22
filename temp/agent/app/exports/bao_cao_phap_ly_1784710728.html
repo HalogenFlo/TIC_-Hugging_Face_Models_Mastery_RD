@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo cáo Tư vấn Pháp luật - LegalMAS</title>
+    <style>
+        @page { size: A4; margin: 20mm; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 900px; margin: 0 auto; padding: 20px; background: #f4f6f9; }
+        .print-bar { background: #1f2937; color: white; padding: 12px 20px; display: flex; justify: space-between; align-items: center; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-print { background: #2563eb; color: white; border: none; padding: 10px 18px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: background 0.2s; font-size: 14px; }
+        .btn-print:hover { background: #1d4ed8; }
+        .report-paper { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .header-title { color: #1e3a8a; border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-top: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .query-box { background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 15px; margin: 20px 0; border-radius: 0 6px 6px 0; font-style: italic; color: #1e40af; }
+        blockquote { background: #f8fafc; border-left: 3px solid #94a3b8; margin: 10px 0; padding: 10px 15px; color: #334155; }
+        @media print { .print-bar { display: none !important; } body { background: white; padding: 0; } .report-paper { box-shadow: none; padding: 0; } }
+    </style>
+</head>
+<body>
+    <div class="print-bar">
+        <span>📄 <strong>Báo cáo Tư vấn Pháp luật LegalMAS</strong></span>
+        <button onclick="window.print()" class="btn-print">🖨️ Tải Xuống / Lưu Thành File PDF</button>
+    </div>
+    <div class="report-paper">
+        <h1 class="header-title">BÁO CÁO TƯ VẤN PHÁP LUẬT VIỆT NAM</h1>
+        <div class="query-box"><strong>Nội dung yêu cầu:</strong> Xuất báo cáo PDF.</div>
+        <div class="content-body">
+            # Báo cáo thuế thu nhập cá nhân<br><br>## Giới thiệu<br>Báo cáo này tổng hợp các quy định liên quan đến thuế thu nhập cá nhân (TNCN) theo các thông tư và luật hiện hành. Mục tiêu là cung cấp thông tin đầy đủ và chính xác nhất cho người sử dụng.<br><br>## 1. Cơ sở pháp lý về thuế thu nhập cá nhân<br>- **Luật thuế thu nhập cá nhân 2007 (sửa đổi, bổ sung 2012)**: Đưa ra những quy định chung về thuế TNCN, xác định đối tượng nộp thuế và các khoản thu nhập chịu thuế.<br>- **Thông tư 04/2017/TT-BTC**: Quy định chi tiết về cách xác định thu nhập chịu thuế và mức thuế suất áp dụng cho từng loại thu nhập. Tuy nhiên, cần xác minh liệu các quy định này còn hiệu lực hay đã có thông tư mới thay thế.<br><br>## 2. Các mức thuế suất và khoản giảm trừ gia cảnh<br>- Quy chế hiện hành có thể có sự khác biệt về các mức thuế suất và cách tính giảm trừ gia cảnh so với các quy định trước đó. Theo quy định tại Điều 156 Luật Ban hành văn bản quy phạm pháp luật 2015, ưu tiên áp dụng văn bản mới hơn nếu có cùng nội dung.<br><br>## 3. Kết luận<br>Cần lưu ý rằng việc áp dụng các quy định về thuế TNCN phải căn cứ vào văn bản pháp luật mới nhất để đảm bảo tính hợp pháp và hợp lý. Các mức thuế và giảm trừ cũng có thể thay đổi tùy thuộc vào các văn bản pháp lý mới hơn.<br><br>## Tài liệu tham khảo<br>1. Luật Thuế thu nhập cá nhân 2007 - Điều 2.<br>2. Thông tư 04/2017/TT-BTC - Điều 1.<br>3. Điều 156 Luật Ban hành văn bản quy phạm pháp luật 2015.
+        </div>
+    </div>
+    <script>
+        // Tự động bật cửa sổ in/lưu PDF khi người dùng mở link
+        window.addEventListener('load', function() {
+            setTimeout(function() { window.print(); }, 600);
+        });
+    </script>
+</body>
+</html>

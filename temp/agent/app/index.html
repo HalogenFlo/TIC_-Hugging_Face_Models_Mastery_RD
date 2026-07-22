@@ -323,6 +323,22 @@
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             border-bottom-left-radius: 4px;
+            position: relative;
+        }
+
+        .response-time-badge {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+            margin-top: 8px;
+            padding-top: 4px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.06);
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         /* markdown styling within messages */
@@ -558,7 +574,7 @@
             <header class="chat-header">
                 <div class="header-title">
                     <h2>Trợ Lý Tư Vấn Pháp Luật Đa Tác Nhân</h2>
-                    <p>Luật Đất Đai & Luật Thuế Việt Nam • Chạy trên LangGraph</p>
+                    <p>Pháp Luật Việt Nam • Chạy trên LangGraph</p>
                 </div>
                 <div id="status-badge" style="font-size: 0.8rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--color-success); padding: 4px 10px; border-radius: 20px;">
                     Online
@@ -568,7 +584,7 @@
             <!-- MESSAGES AREA -->
             <section class="chat-messages" id="chat-messages">
                 <div class="message assistant">
-                    Xin chào! Tôi là Trợ lý tư vấn pháp luật đa tác nhân (LegalMAS). Tôi có thể hỗ trợ bạn các vấn đề liên quan đến **Luật Thuế** và **Luật Đất Đai Việt Nam**. Bạn cần tư vấn về vấn đề gì hôm nay?
+                    Xin chào! Tôi là Trợ lý tư vấn pháp luật đa tác nhân (LegalMAS). Tôi có thể hỗ trợ bạn giải đáp các vấn đề liên quan đến **Pháp luật Việt Nam**. Bạn cần tư vấn về vấn đề gì hôm nay?
                 </div>
             </section>
 
@@ -635,19 +651,61 @@
             }
         }
 
-        function appendMessage(sender, text) {
+        function formatResponseTime(sec) {
+            if (!sec) return "";
+            const totalSec = parseFloat(sec);
+            if (isNaN(totalSec) || totalSec <= 0) return "";
+            if (totalSec >= 60) {
+                const mins = Math.floor(totalSec / 60);
+                const remSec = (totalSec % 60).toFixed(1);
+                return `${mins} phút ${remSec}s`;
+            }
+            return `${totalSec.toFixed(1)}s`;
+        }
+
+        function appendMessage(sender, text, responseTimeSec = null) {
             const container = document.getElementById("chat-messages");
             const msgDiv = document.createElement("div");
             msgDiv.classList.add("message", sender);
             
             if (sender === "assistant") {
-                msgDiv.innerHTML = marked.parse(text);
+                let htmlContent = marked.parse(text);
+                const formattedTime = formatResponseTime(responseTimeSec);
+                if (formattedTime) {
+                    htmlContent += `<div class="response-time-badge">${formattedTime}</div>`;
+                }
+                msgDiv.innerHTML = htmlContent;
             } else {
                 msgDiv.textContent = text;
             }
             
             container.appendChild(msgDiv);
             container.scrollTop = container.scrollHeight;
+        }
+
+        function getGlobalUserProfile() {
+            try {
+                const data = localStorage.getItem("legalmas_global_profile");
+                if (data) return JSON.parse(data);
+            } catch (e) {
+                console.error("Error reading global profile:", e);
+            }
+            return { facts: [], preferences: [] };
+        }
+
+        function saveGlobalUserProfile(profile) {
+            if (!profile) return;
+            try {
+                const existing = getGlobalUserProfile();
+                const mergedFacts = Array.from(new Set([...(existing.facts || []), ...(profile.facts || [])]));
+                const mergedPrefs = Array.from(new Set([...(existing.preferences || []), ...(profile.preferences || [])]));
+                const updated = { facts: mergedFacts, preferences: mergedPrefs };
+                localStorage.setItem("legalmas_global_profile", JSON.stringify(updated));
+                return updated;
+            } catch (e) {
+                console.error("Error saving global profile:", e);
+            }
+            return profile;
         }
 
         function updateProfileUI() {
@@ -657,8 +715,13 @@
             factsUl.innerHTML = "";
             prefsUl.innerHTML = "";
             
-            const facts = chatState.user_profile?.facts || [];
-            const prefs = chatState.user_profile?.preferences || [];
+            const globalProfile = getGlobalUserProfile();
+            const facts = (chatState.user_profile?.facts && chatState.user_profile.facts.length > 0) 
+                ? chatState.user_profile.facts 
+                : globalProfile.facts || [];
+            const prefs = (chatState.user_profile?.preferences && chatState.user_profile.preferences.length > 0) 
+                ? chatState.user_profile.preferences 
+                : globalProfile.preferences || [];
             
             if (facts.length === 0) {
                 factsUl.innerHTML = `<li style="color: var(--text-secondary); font-style: italic;">Chưa thu thập dữ kiện.</li>`;
@@ -745,14 +808,15 @@
 
         function createNewSession() {
             const newId = "session_" + Date.now();
+            const savedProfile = getGlobalUserProfile();
             const newSession = {
                 id: newId,
                 title: "Cuộc hội thoại mới",
                 messages: [
-                    { sender: "assistant", text: "Xin chào! Tôi là Trợ lý tư vấn pháp luật đa tác nhân (LegalMAS). Tôi có thể hỗ trợ bạn các vấn đề liên quan đến **Luật Thuế** và **Luật Đất Đai Việt Nam**. Bạn cần tư vấn về vấn đề gì hôm nay?" }
+                    { sender: "assistant", text: "Xin chào! Tôi là Trợ lý tư vấn pháp luật đa tác nhân (LegalMAS). Tôi có thể hỗ trợ bạn giải đáp các vấn đề liên quan đến **Pháp luật Việt Nam**. Bạn cần tư vấn về vấn đề gì hôm nay?" }
                 ],
                 state: {
-                    user_profile: { facts: [], preferences: [] },
+                    user_profile: savedProfile,
                     effort_level: "simple"
                 }
             };
@@ -814,16 +878,7 @@
             const container = document.getElementById("chat-messages");
             container.innerHTML = "";
             session.messages.forEach(msg => {
-                const sender = msg.sender;
-                const text = msg.text;
-                const msgDiv = document.createElement("div");
-                msgDiv.classList.add("message", sender);
-                if (sender === "assistant") {
-                    msgDiv.innerHTML = marked.parse(text);
-                } else {
-                    msgDiv.textContent = text;
-                }
-                container.appendChild(msgDiv);
+                appendMessage(msg.sender, msg.text, msg.responseTimeSec || null);
             });
             container.scrollTop = container.scrollHeight;
             
@@ -886,6 +941,8 @@
             }
             
             isWaiting = true;
+            const startTime = performance.now(); // Bắt đầu tính thời gian phản hồi
+            
             const msgContainer = document.getElementById("chat-messages");
             const loadingDiv = document.createElement("div");
             loadingDiv.classList.add("message", "assistant");
@@ -912,45 +969,55 @@
                 const bubble = document.getElementById("loading-bubble");
                 if (bubble) bubble.remove();
                 
+                const endTime = performance.now();
+                const responseTimeSec = ((endTime - startTime) / 1000).toFixed(2); // Thời gian tính bằng giây
+                
                 if (result.success) {
                     chatState = result.state;
+                    if (result.state && result.state.user_profile) {
+                        saveGlobalUserProfile(result.state.user_profile);
+                    }
                     highlightNodes(result.nodes_executed || []);
                     updateProfileUI();
                     
                     let assistantText = "";
                     if (result.effort_level === "clarification") {
                         assistantText = "Tôi cần thêm thông tin để làm rõ câu hỏi của bạn. Vui lòng xem yêu cầu làm rõ bên dưới.";
-                        appendMessage("assistant", assistantText);
+                        appendMessage("assistant", assistantText, responseTimeSec);
                         document.getElementById("clarify-prompt-text").textContent = result.human_feedback;
                         document.getElementById("clarify-banner").style.display = "block";
                         document.getElementById("chat-input").placeholder = "Nhập thông tin trả lời làm rõ...";
                     } else {
                         assistantText = result.draft_answer || "Đã xảy ra lỗi tóm tắt kết quả.";
-                        appendMessage("assistant", assistantText);
+                        appendMessage("assistant", assistantText, responseTimeSec);
                         document.getElementById("chat-input").placeholder = "Nhập câu hỏi pháp lý của bạn...";
                     }
                     
                     // Ghi nhận tin nhắn assistant phản hồi và state vào session
                     if (session) {
-                        session.messages.push({ sender: "assistant", text: assistantText });
+                        session.messages.push({ sender: "assistant", text: assistantText, responseTimeSec: responseTimeSec });
                         session.state = JSON.parse(JSON.stringify(chatState));
                         saveSessionsToStorage();
                     }
                 } else {
                     const errText = "Xin lỗi, đã xảy ra lỗi trong quá trình kết nối máy chủ: " + result.error;
-                    appendMessage("assistant", errText);
+                    appendMessage("assistant", errText, responseTimeSec);
                     if (session) {
-                        session.messages.push({ sender: "assistant", text: errText });
+                        session.messages.push({ sender: "assistant", text: errText, responseTimeSec: responseTimeSec });
                         saveSessionsToStorage();
                     }
                 }
             } catch (err) {
                 const bubble = document.getElementById("loading-bubble");
                 if (bubble) bubble.remove();
+                
+                const endTime = performance.now();
+                const responseTimeSec = ((endTime - startTime) / 1000).toFixed(2);
+                
                 const networkErr = "Lỗi mạng hoặc server không phản hồi: " + err.message;
-                appendMessage("assistant", networkErr);
+                appendMessage("assistant", networkErr, responseTimeSec);
                 if (session) {
-                    session.messages.push({ sender: "assistant", text: networkErr });
+                    session.messages.push({ sender: "assistant", text: networkErr, responseTimeSec: responseTimeSec });
                     saveSessionsToStorage();
                 }
             } finally {
@@ -963,7 +1030,7 @@
                 const session = sessions.find(s => s.id === currentSessionId);
                 if (session) {
                     session.messages = [
-                        { sender: "assistant", text: "Lịch sử hội thoại đã được đặt lại thành công. Tôi có thể hỗ trợ bạn các vấn đề liên quan đến **Luật Thuế** và **Luật Đất Đai Việt Nam**. Bạn cần tư vấn về vấn đề gì?" }
+                        { sender: "assistant", text: "Lịch sử hội thoại đã được đặt lại thành công. Tôi có thể hỗ trợ bạn giải đáp các vấn đề liên quan đến **Pháp luật Việt Nam**. Bạn cần tư vấn về vấn đề gì hôm nay?" }
                     ];
                     session.title = "Cuộc hội thoại mới";
                     session.state = {

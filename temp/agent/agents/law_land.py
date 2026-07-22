@@ -32,11 +32,23 @@ class LandLawAgent(BaseAgent):
         goal_context = (
             "Bạn là một chuyên gia tư vấn pháp luật Đất đai Việt Nam giàu kinh nghiệm. Nhiệm vụ của bạn là nhận "
             "câu hỏi của người dùng và các thông tin luật được cung cấp từ CSDL để đưa ra câu trả lời nháp có "
-            "căn cứ pháp lý rõ ràng, chính xác và cập nhật hiệu lực mới nhất."
+            "căn cứ pháp lý rõ ràng, chính xác.\n"
+            "QUY TẮC XỬ LÝ ĐỐI TƯỢNG VÀ THỜI GIAN:\n"
+            "1. Về Đối tượng: Nếu người dùng ĐÃ NÊU CỤ THỂ ĐỐI TƯỢNG (ví dụ: 'Tôi là doanh nghiệp tư nhân...', 'Tôi là hộ gia đình...'), "
+            "hãy tập trung trả lời CHÍNH XÁC CHO ĐÚNG ĐỐI TƯỢNG ĐÓ. Chỉ khi người dùng KHÔNG nói rõ đối tượng mà luật có sự phân biệt, "
+            "hãy phân tích đầy đủ tất cả các trường hợp phân lớp để họ tham khảo.\n"
+            "2. Về Mốc Thời gian: Nếu người dùng KHÔNG NÓI GÌ VỀ MỐC THỜI GIAN, MẶC ĐỊNH 100% ÁP DỤNG VĂN BẢN LUẬT MỚI NHẤT HIỆN HÀNH. "
+            "Chỉ khi người dùng NÊU RÕ MỐC/KHOẢNG THỜI GIAN QUÁ KHỨ CỤ THỂ (ví dụ: năm 2017, năm 2021...), "
+            "mới áp dụng văn bản luật có hiệu lực tại đúng giai đoạn lịch sử đó.\n"
+            "3. QUY TẮC TRÍCH GIẢI CHI TIẾT NỘI DUNG ĐIỀU LUẬT: Tuyệt đối KHÔNG chỉ trích dẫn tên điều khoản suông "
+            "(như 'theo quy định tại Điều X Luật Đất đai...'). Bạn bắt buộc phải NÊU VÀ TRÍCH GIẢI RÕ NỘI DUNG CỤ THỂ CỦA ĐIỀU LUẬT ĐÓ "
+            "(điều luật đó quy định những gì, điều kiện ra sao, thủ tục/quyền lợi thế nào...) dựa trên dữ liệu CSDL được cung cấp "
+            "để người dùng đọc là hiểu ngay mà không cần phải tự đi tìm tra cứu lại."
         )
         task_boundary = (
             "Chỉ tư vấn và trả lời các nội dung liên quan đến Luật Đất đai Việt Nam. Phải trích dẫn chính xác "
-            "các số hiệu văn bản và điều khoản được cung cấp trong phần tài liệu hỗ trợ theo dạng [Số hiệu - Điều khoản]. "
+            "các số hiệu văn bản và điều khoản theo cấu trúc chuẩn dạng [Số hiệu văn bản - Điều X - Khoản Y - Điểm Z] "
+            "(ví dụ: [Luật Đất đai 2024 - Điều 10 - Khoản 2 - Điểm a]). "
             "Tuyệt đối không tự bịa đặt (hallucinate) các số hiệu văn bản hoặc nội dung điều luật không có trong tài liệu hỗ trợ."
         )
         skills_tools = ["search_retrieval", "analysis"]
@@ -128,7 +140,11 @@ class LandLawAgent(BaseAgent):
             "và viết một câu hỏi làm rõ tinh tế trong clarification_prompt để hướng dẫn người dùng bổ sung thông tin."
         )
         
+        user_profile = state.get("user_profile", {})
+        profile_text = f"Hồ sơ người dùng đã lưu từ các phiên trước: {user_profile}\n" if user_profile else ""
+
         user_content = (
+            f"{profile_text}"
             f"Câu hỏi của người dùng: {query_text}\n\n"
             f"Dữ liệu pháp luật hỗ trợ tra cứu:\n{context_str}\n"
         )

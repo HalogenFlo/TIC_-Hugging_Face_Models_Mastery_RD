@@ -55,11 +55,19 @@ class WebUIRequestHandler(http.server.SimpleHTTPRequestHandler):
                 user_id = request_json.get("user_id", "web_user_01")
                 previous_state = request_json.get("state", {})
                 
+                print(f"\n==================================================")
+                print(f"[CHAT REQUEST] User ID: {user_id} | Question: '{raw_query}'")
+                print(f"==================================================")
+                sys.stdout.flush()
+                
+                # 1. Khôi phục danh sách tin nhắn lịch sử
+                previous_messages = previous_state.get("messages", [])
+                
                 # 1. Khởi tạo/Khôi phục state hội thoại
                 state = {
                     "user_id": user_id,
                     "user_profile": previous_state.get("user_profile") or load_user_profile(user_id),
-                    "messages": [],
+                    "messages": previous_messages,
                     "raw_query": raw_query,
                     "refined_query": previous_state.get("refined_query", ""),
                     "effort_level": previous_state.get("effort_level", "simple"),
@@ -88,7 +96,16 @@ class WebUIRequestHandler(http.server.SimpleHTTPRequestHandler):
                 for output in app.stream(state):
                     for node_name, node_output in output.items():
                         nodes_executed.append(node_name)
+                        print(f" -> [EXECUTE NODE]: {node_name}")
+                        sys.stdout.flush()
                         final_state = merge_state(final_state, node_output)
+                
+                # Cập nhật tin nhắn lượt hiện tại vào lịch sử messages
+                updated_messages = list(previous_messages)
+                updated_messages.append({"role": "user", "content": raw_query})
+                if final_state.get("draft_answer"):
+                    updated_messages.append({"role": "assistant", "content": final_state.get("draft_answer")})
+                final_state["messages"] = updated_messages
                 
                 # 3. Đồng bộ bộ nhớ dài hạn nếu tư vấn thành công và có câu trả lời
                 if final_state.get("effort_level") != "clarification" and final_state.get("draft_answer"):
@@ -99,6 +116,10 @@ class WebUIRequestHandler(http.server.SimpleHTTPRequestHandler):
                     ]
                     new_profile = sync_long_term_memory(user_id, chat_history)
                     final_state["user_profile"] = new_profile
+                
+                print(f"[CHAT SUCCESS] Executed {len(nodes_executed)} nodes: {nodes_executed}")
+                print(f"==================================================\n")
+                sys.stdout.flush()
                 
                 # Tạo payload kết quả phản hồi
                 response_data = {
@@ -111,6 +132,7 @@ class WebUIRequestHandler(http.server.SimpleHTTPRequestHandler):
                     # Trả lại state dạng rút gọn để frontend lưu trữ duy trì phiên tiếp theo
                     "state": {
                         "user_profile": final_state.get("user_profile"),
+                        "messages": final_state.get("messages", []),
                         "raw_query": final_state.get("raw_query"),
                         "refined_query": final_state.get("refined_query"),
                         "effort_level": final_state.get("effort_level"),
@@ -133,7 +155,9 @@ class WebUIRequestHandler(http.server.SimpleHTTPRequestHandler):
                 
             except Exception as e:
                 import traceback
+                print(f"\n[CHAT ERROR] Exception occurred during chat execution:")
                 traceback.print_exc()
+                sys.stdout.flush()
                 self.send_response(500)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
                 self.end_headers()

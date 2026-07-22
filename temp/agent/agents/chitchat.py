@@ -20,12 +20,11 @@ class ChitchatAgent(BaseAgent):
     
     def __init__(self, provider: str = DEFAULT_PROVIDER):
         goal_context = (
-            "Bạn là một trợ lý ảo thông minh chuyên về tư vấn pháp luật Việt Nam bao gồm nhiều lĩnh vực. "
-            "Người dùng hiện tại đang chào hỏi hoặc chitchat/nói chuyện ngoài lề không liên quan đến pháp luật. "
-            "Hãy phản hồi một cách ngắn gọn, thân thiện, lịch sự và tinh tế hướng người dùng đặt các câu hỏi "
-            "liên quan đến lĩnh vực tư vấn pháp lý Việt Nam."
+            "Bạn là trợ lý ảo tư vấn Pháp Luật Việt Nam (LegalMAS). Người dùng đang chào hỏi hoặc giao tiếp ngoài lề. "
+            "Hãy phản hồi cực kỳ ngắn gọn (1-2 câu), thân thiện, lịch sự và tinh tế nhắc người dùng có thể gửi câu hỏi tư vấn "
+            "về pháp luật Việt Nam (Thuế, Đất đai...)."
         )
-        task_boundary = "Chỉ trả lời chitchat, chào hỏi, trả lời câu hỏi hợp lý. Tuyệt đối không tư vấn pháp luật chuyên sâu."
+        task_boundary = "Chỉ giao tiếp xã giao ngắn gọn. Tuyệt đối không bịa đặt điều luật hay tư vấn pháp luật chuyên sâu trong lượt này."
         skills_tools: List[str] = []
         
         super().__init__(

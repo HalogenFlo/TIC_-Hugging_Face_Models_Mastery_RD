@@ -22,15 +22,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="decisions.html">
-                        <span class="nav-icon">⚙️</span>
-                        <span>Quyết định & Ràng buộc</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="core-system.html">
-                        <span class="nav-icon">🛡️</span>
-                        <span>Cấu hình & State</span>
+                    <a href="system-updates.html">
+                        <span class="nav-icon">🚀</span>
+                        <span>Nâng cấp & Tính năng Mới</span>
                     </a>
                 </li>
                 <li class="nav-item active">
@@ -46,9 +40,21 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="core-system.html">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Cấu hình Cốt lõi</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="neo4j-schema.html">
-                        <span class="nav-icon">🔗</span>
-                        <span>Neo4j GraphRAG</span>
+                        <span class="nav-icon">🗄️</span>
+                        <span>Kiến trúc Neo4j</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="decisions.html">
+                        <span class="nav-icon">📜</span>
+                        <span>Quyết định & Ràng buộc</span>
                     </a>
                 </li>
             </ul>
@@ -56,226 +62,84 @@
 
         <!-- Main Content Area -->
         <main class="main-content">
-            <header style="text-align: center; margin-bottom: 3rem;">
-                <div class="badge badge-indigo" style="margin-bottom: 1rem;">Tài liệu Kỹ thuật</div>
-                <h1 style="font-size: 2.5rem; margin-bottom: 0.75rem;">Chi tiết Tầng Tác nhân (Agents)</h1>
-                <p class="subtitle" style="font-size: 1.15rem;">Báo cáo chi tiết cấu trúc, hợp đồng 4 phần, tham số đầu vào/đầu ra và giải thích logic cho các tác nhân con (Sub-agents) tại Tầng 2.</p>
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">🤖 Tài Liệu Chi Tiết Tầng Tác Nhân (Agents)</h1>
+                    <p class="page-subtitle">Đồng nhất 100% giữa mã nguồn thực tế và tài liệu báo cáo hệ thống Multi-Agent</p>
+                </div>
+                <div class="status-badge status-stable">Đồng bộ Mã nguồn</div>
             </header>
 
-            <!-- SECTION 1: BASEAGENT CONTRACT -->
-            <section style="margin-bottom: 4rem;">
-                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-accent);">1. Hợp đồng Tác nhân Cơ sở: BaseAgent</h2>
-                <p>Nằm tại đường dẫn: <code>agents/base.py</code>. Đây là lớp trừu tượng quy định hợp đồng bắt buộc cho mọi Agent chuyên biệt trong hệ thống.</p>
-                <div class="card" style="margin-bottom: 1.5rem;">
-                    <strong style="color: #fff;">Hợp đồng 4 phần bắt buộc:</strong>
-                    <ul style="padding-left: 1.5rem; line-height: 1.8; margin-top: 0.5rem; color: var(--text-secondary);">
-                        <li><strong>Goal & Context:</strong> Định nghĩa vai trò, nhiệm vụ và chỉ dẫn hệ thống (System Prompt) cho Agent.</li>
-                        <li><strong>Task Boundary:</strong> Ranh giới nhiệm vụ nghiêm ngặt, ngăn chặn hallucination hoặc xâm phạm domain chéo.</li>
-                        <li><strong>Skills & Tools:</strong> Danh sách tên các kỹ năng/công cụ được phân quyền sử dụng.</li>
-                        <li><strong>Output Schema:</strong> Lớp mô hình Pydantic bắt buộc kết quả trả về của Agent tuân thủ cấu trúc dữ liệu JSON chặt chẽ.</li>
-                    </ul>
-                </div>
-            </section>
+            <div class="content-body">
+                <!-- Agent 1: QueryReformAgent -->
+                <section class="doc-section">
+                    <h2 class="section-title">1. QueryReformAgent (Chuẩn Hóa Ngữ Cảnh & Đánh Giá Mức Rõ Ràng)</h2>
+                    <div class="card">
+                        <p><strong>File mã nguồn:</strong> <a href="file:///c:/Users/Admin/Desktop/TIC_Project/temp/agent/agents/query_reform.py">agents/query_reform.py</a></p>
+                        <p><strong>Nhiệm vụ:</strong> Chuẩn hóa chính tả, viết tắt, trích xuất thực thể, nạp 12 tin nhắn gần nhất (6 lượt trao đổi) + Hồ sơ dài hạn (<code>user_profile</code>) để làm rõ câu hỏi nối tiếp.</p>
+                        <h4>Bộ 8 Nhóm Quy Tắc Hỏi Làm Rõ Tinh Tế (Clarification Ruleset):</h4>
+                        <ol class="feature-list">
+                            <li><strong>Cụt ngủn / Mơ hồ:</strong> <code>confidence &lt; 0.70</code> khi câu hỏi thiếu ý nghĩa (VD: <em>"Tiền bao nhiêu?"</em>).</li>
+                            <li><strong>Danh mục Hàng hóa quá rộng:</strong> <code>confidence &lt; 0.70</code> cho các thuật ngữ như <em>"thuế cá", "thuế gỗ", "thuế xe"</em> ➔ Hỏi làm rõ dạng chế biến/dòng xe/mục đích.</li>
+                            <li><strong>Thiếu Địa bàn Đất đai:</strong> <code>confidence &lt; 0.70</code> khi hỏi <em>"giá đất thế nào?"</em> ➔ Hỏi làm rõ Quận/Huyện, Phường/Xã hoặc đường cụ thể.</li>
+                            <li><strong>Thiếu Tình trạng Giấy tờ Đất:</strong> <code>confidence &lt; 0.70</code> cho thủ tục làm sổ đỏ ➔ Hỏi làm rõ đã có Sổ đỏ/Sổ hồng chưa.</li>
+                            <li><strong>Thiếu Mốc Thời gian Tranh chấp:</strong> Hỏi làm rõ mốc năm giao dịch (2013, 2017 hay 2024) để tra cứu đúng luật có hiệu lực tại thời điểm đó.</li>
+                            <li><strong>Thiếu Loại hình Thuế cụ thể:</strong> Hỏi rõ Thuế GTGT, TNDN, TNCN hay Lệ phí môn bài.</li>
+                            <li><strong>Thiếu Hàng Thừa kế / Di chúc:</strong> Hỏi rõ có di chúc hay không, quan hệ nhân thân.</li>
+                            <li><strong>Thiếu Điều kiện Ưu đãi / Miễn giảm:</strong> Hỏi rõ điều kiện bán nhà duy nhất, địa bàn ưu đãi đầu tư.</li>
+                        </ol>
+                    </div>
+                </section>
 
-            <!-- SECTION 2: CHITCHAT AGENT -->
-            <section style="margin-bottom: 4rem;">
-                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-warning);">2. Tác nhân Chitchat: ChitchatAgent</h2>
-                <p>Nằm tại đường dẫn: <code>agents/chitchat.py</code>. Chịu trách nhiệm bypass các hội thoại xã giao, hỏi thăm ngoài lề để tinh tế hướng dẫn người dùng trở lại các lĩnh vực chuyên môn của hệ thống.</p>
-                
-                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-warning);">
-                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>ChitchatAgent(BaseAgent)</code></h3>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
-                        <li><strong>Goal & Context:</strong> Đóng vai trò là trợ lý ảo pháp luật Việt Nam lịch sự và thân thiện khi người dùng chitchat.</li>
-                        <li><strong>Task Boundary:</strong> Chỉ trả lời chào hỏi xã giao. Tuyệt đối không đưa ra các tư vấn pháp lý chuyên sâu.</li>
-                        <li><strong>Skills & Tools:</strong> Không sử dụng kỹ năng hay công cụ nghiệp vụ (<code>[]</code>).</li>
-                        <li><strong>Output Schema (ChitchatOutput):</strong>
-                            <ul>
-                                <li><code>response</code> (str): Nội dung phản hồi ngắn gọn hướng người dùng trở lại chuyên môn pháp luật.</li>
-                            </ul>
-                        </li>
-                    </ul>
+                <!-- Agent 2: OrchestratorAgent -->
+                <section class="doc-section">
+                    <h2 class="section-title">2. OrchestratorAgent (Tác Nhân Điều Phối Đa Miền)</h2>
+                    <div class="card">
+                        <p><strong>File mã nguồn:</strong> <a href="file:///c:/Users/Admin/Desktop/TIC_Project/temp/agent/orchestrator.py">orchestrator.py</a></p>
+                        <p><strong>Nhiệm vụ:</strong> Định tuyến ý định ban đầu (Chitchat bypass vs Legal query) và phát hiện tất cả các domain bị ảnh hưởng.</p>
+                        <ul class="feature-list">
+                            <li><strong>Định tuyến Mở rộng N-Domain:</strong> Sẵn sàng định tuyến mở rộng cho N lĩnh vực luật khác nhau (<code>tax</code>, <code>land</code>, <code>enterprise</code>, <code>civil</code>...) đồng thời khi câu hỏi có sự giao thoa.</li>
+                        </ul>
+                    </div>
+                </section>
 
-                    <h4 style="color: #fff;">Hàm: <code>run(state)</code></h4>
-                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 1rem;">
-                        Đọc câu hỏi thô từ <code>state.get("raw_query")</code>, sử dụng mô hình LLM con (<code>MODEL_SUB_AGENT_*</code>) để sinh phản hồi chitchat thân thiện và trả về kết quả tuân thủ <code>ChitchatOutput</code>.
-                    </p>
-                    <h4 style="color: #fff;">Cơ chế bảo vệ (Fallback robustness):</h4>
-                    <p style="color: var(--text-secondary); line-height: 1.8;">
-                        Nếu cuộc gọi LLM gặp lỗi (ví dụ: mất kết nối, lỗi API key), hàm tự động bắt ngoại lệ và trả về phản hồi fallback mặc định: <i>"Xin chào! Tôi là trợ lý ảo tư vấn pháp luật Việt Nam. Hiện tôi hỗ trợ giải đáp các thắc mắc về các lĩnh vực pháp luật như: Luật Thuế, Luật Đất đai, Luật Lao động, Luật Doanh nghiệp..."</i>
-                    </p>
-                </div>
-            </section>
+                <!-- Agent 3: TaxLawAgent & LandLawAgent -->
+                <section class="doc-section">
+                    <h2 class="section-title">3. TaxLawAgent & LandLawAgent (Các Tác Nhân Chuyên Môn)</h2>
+                    <div class="card">
+                        <p><strong>File mã nguồn:</strong> <a href="file:///c:/Users/Admin/Desktop/TIC_Project/temp/agent/agents/law_tax.py">agents/law_tax.py</a> | <a href="file:///c:/Users/Admin/Desktop/TIC_Project/temp/agent/agents/law_land.py">agents/law_land.py</a></p>
+                        <ul class="feature-list">
+                            <li><strong>Quy tắc Đối tượng Cụ thể:</strong> Nếu người dùng đã nói rõ đối tượng (như <em>"Doanh nghiệp tư nhân"</em>), tập trung trả lời đúng duy nhất cho đối tượng đó.</li>
+                            <li><strong>Quy tắc Mốc Thời gian:</strong> Áp dụng văn bản luật có hiệu lực tại đúng giai đoạn xảy ra sự việc (nếu không nêu mốc thời gian ➔ mặc định áp dụng <strong>Luật Mới Nhất Hiện Hành</strong>).</li>
+                            <li><strong>Quy tắc Trích giải Chi tiết Điều luật:</strong> Trích giải chi tiết nội dung cụ thể của điều luật thay vì chỉ ghi tên số hiệu suông.</li>
+                            <li><strong>Nạp Hồ sơ Người dùng:</strong> Luôn đọc <code>user_profile</code> từ CSDL để cá nhân hóa câu trả lời.</li>
+                        </ul>
+                    </div>
+                </section>
 
-            <!-- SECTION 3: QUERY REFORM AGENT -->
-            <section style="margin-bottom: 4rem;">
-                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-accent);">3. Tác nhân Chuẩn hóa: QueryReformAgent</h2>
-                <p>Nằm tại đường dẫn: <code>agents/query_reform.py</code>. Có vai trò chuẩn hóa ngôn ngữ tự nhiên từ người dùng, sửa chính tả, dịch thuật ngữ viết tắt, trích xuất thực thể và đánh giá mức độ đầy đủ thông tin để cấp quyền cho bộ lọc hỏi lại (Clarification Gate).</p>
+                <!-- Agent 4: ConflictResolutionAgent -->
+                <section class="doc-section">
+                    <h2 class="section-title">4. ConflictResolutionAgent (Tác Nhân Giải Quyết Mâu Thuẫn)</h2>
+                    <div class="card">
+                        <p><strong>File mã nguồn:</strong> <a href="file:///c:/Users/Admin/Desktop/TIC_Project/temp/agent/agents/conflict.py">agents/conflict.py</a></p>
+                        <p>Áp dụng 5 nguyên tắc giải quyết mâu thuẫn tối cao theo Điều 156 Luật Ban hành VBQPPL 2015: Cấp bậc hiệu lực (Luật > Nghị định > Thông tư), Mốc thời gian ban hành (Mới thay Cũ), Luật chuyên ngành > Luật chung, Giá tính thuế Nhà nước, và Xung đột mốc thời gian lịch sử.</p>
+                    </div>
+                </section>
 
-                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-accent);">
-                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>QueryReformAgent(BaseAgent)</code></h3>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
-                        <li><strong>Goal & Context:</strong> Chuyên gia phân tích ngôn ngữ pháp lý Việt Nam, tối ưu hóa câu hỏi thô trước khi đưa vào GraphRAG.</li>
-                        <li><strong>Task Boundary:</strong> Chỉ làm sạch và phân tích cấu trúc câu hỏi. Tuyệt đối không đưa ra bất kỳ câu trả lời tư vấn luật nào.</li>
-                        <li><strong>Skills & Tools:</strong> Không sử dụng kỹ năng hay công cụ trực tiếp (<code>[]</code>).</li>
-                        <li><strong>Output Schema (QueryReformOutput):</strong>
-                            <ul>
-                                <li><code>refined_query</code> (str): Câu hỏi đã được chuẩn hóa lỗi chính tả và làm rõ các từ viết tắt.</li>
-                                <li><code>detected_entities</code> (List[str]): Danh sách các thực thể pháp lý phát hiện (ví dụ: "thuế thu nhập doanh nghiệp", "Thông tư 103").</li>
-                                <li><code>original_query</code> (str): Lưu trữ lại câu hỏi gốc để đối chiếu.</li>
-                                <li><code>confidence</code> (float): Điểm tin cậy (0.0 -> 1.0) thể hiện độ rõ ràng của câu hỏi. Nếu <code>confidence < 0.75</code>, hệ thống sẽ kích hoạt hỏi lại.</li>
-                                <li><code>missing_info</code> (List[MissingInfoItem]): Chứa danh sách các trường thông tin bị thiếu (<code>field</code>) kèm câu hỏi gợi ý chi tiết (<code>suggestion</code>) để người dùng bổ sung.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <h4 style="color: #fff;">Hàm: <code>run(state)</code></h4>
-                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 1rem;">
-                        Gọi LLM với system instruction tối ưu hóa và yêu cầu trả về phân tích đầy đủ các trường trong <code>QueryReformOutput</code>.
-                    </p>
-                    <h4 style="color: #fff;">Cơ chế bảo vệ (Fallback robustness):</h4>
-                    <p style="color: var(--text-secondary); line-height: 1.8;">
-                        Nếu có lỗi phát sinh trong quá trình gọi hoặc giải mã mô hình, Agent tự động bypass và trả về câu hỏi gốc của người dùng với điểm tin cậy fallback <code>confidence: 0.5</code> và danh sách thiếu thông tin rỗng.
-                    </p>
-                </div>
-            </section>
-
-            <!-- SECTION 4: TAX LAW AGENT -->
-            <section style="margin-bottom: 4rem;">
-                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-success);">4. Tác nhân Nghiệp vụ Luật Thuế: TaxLawAgent</h2>
-                <p>Nằm tại đường dẫn: <code>agents/law_tax.py</code>. Đây là tác nhân chuyên sâu chịu trách nhiệm giải quyết trực tiếp nghiệp vụ tư vấn pháp luật Thuế Việt Nam thông qua việc điều phối các Skill ở Tầng 1 và lập luận logic.</p>
-
-                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-success);">
-                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>TaxLawAgent(BaseAgent)</code></h3>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
-                        <li><strong>Goal & Context:</strong> Trợ lý tư vấn luật Thuế Việt Nam chuyên nghiệp, đưa ra câu trả lời nháp chính xác dựa trên căn cứ luật thực tế.</li>
-                        <li><strong>Task Boundary:</strong> Chỉ trả lời nội dung thuộc Luật Thuế Việt Nam. Phải trích dẫn dạng <code>[Số hiệu - Điều khoản]</code> dựa theo tài liệu hỗ trợ. Tuyệt đối không tự bịa đặt tài liệu.</li>
-                        <li><strong>Skills & Tools:</strong> Phân quyền gọi Kỹ năng tra cứu (<code>search_retrieval</code>) và phân tích sâu điều luật (<code>analysis</code>).</li>
-                        <li><strong>Output Schema (TaxLawOutput):</strong>
-                            <ul>
-                                <li><code>draft_answer</code> (str): Nội dung câu trả lời nháp chi tiết kèm các điểm trích dẫn luật định dạng chuẩn.</li>
-                                <li><code>citations</code> (List[CitationItem]): Danh sách các đối tượng trích dẫn cấu trúc chứa: <code>norm_code</code>, <code>citation_name</code>, và <code>comp_id</code>. Việc định nghĩa lớp Pydantic con này giúp loại bỏ lỗi <code>additionalProperties is not supported in the Gemini API</code>.</li>
-                                <li><code>requires_clarification</code> (bool): Đặt thành True nếu ngữ cảnh thiếu thông tin nghiệp vụ cụ thể để đưa ra kết luận.</li>
-                                <li><code>clarification_prompt</code> (str, optional): Câu hỏi làm rõ nghiệp vụ chi tiết gửi tới người dùng.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <h4 style="color: #fff;">Hàm thành viên:</h4>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
-                        <li><code>_process_search_item(item)</code> (Pure Function): 
-                            Nhận một kết quả tra cứu thô từ Skill Tra Cứu, trích xuất thông tin trích dẫn, và gọi tiếp Kỹ năng Phân tích sâu để lấy thông tin trạng thái hiệu lực thực tế cùng lịch sử sửa đổi đệ quy của điều khoản đó trên Neo4j Graph.
-                        </li>
-                        <li><code>run(state)</code>:
-                            Lấy câu hỏi đã chuẩn hóa, thực hiện gọi <code>execute_search_retrieval()</code>. Tiếp đến, sử dụng <code>map()</code> theo phong cách lập trình hàm (Functional Programming) để xử lý song song các kết quả thông qua <code>_process_search_item()</code>. Cuối cùng, tổng hợp toàn bộ nội dung văn bản gốc và lịch sử sửa đổi thành ngữ cảnh hoàn chỉnh truyền cho LLM suy luận.
-                        </li>
-                    </ul>
-
-                    <h4 style="color: #fff;">Cơ chế bảo vệ (Fallback robustness):</h4>
-                    <p style="color: var(--text-secondary); line-height: 1.8;">
-                        Bất cứ lỗi phát sinh nào ở lớp Kỹ năng đều được bắt ngoại lệ cục bộ và trả về danh sách trống để Agent vẫn có thể hoạt động (hoặc tự động fallback sang Web Search qua Tavily). Nếu LLM gặp lỗi trong quá trình tổng hợp câu trả lời, Agent trả về cấu trúc fallback an toàn thông báo lỗi hệ thống đi kèm với các trích dẫn pháp luật sơ bộ đã tìm kiếm được để hỗ trợ người dùng.
-                    </p>
-                </div>
-            </section>
-
-            <!-- SECTION 5: LAND LAW AGENT -->
-            <section style="margin-bottom: 4rem;">
-                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-accent);">5. Tác nhân Nghiệp vụ Luật Đất đai: LandLawAgent</h2>
-                <p>Nằm tại đường dẫn: <code>agents/law_land.py</code>. Đây là tác nhân chuyên sâu thứ tư, chịu trách nhiệm trực tiếp phân tích và tư vấn các nghiệp vụ liên quan đến Luật Đất đai Việt Nam.</p>
-
-                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-accent);">
-                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>LandLawAgent(BaseAgent)</code></h3>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
-                        <li><strong>Goal & Context:</strong> Trợ lý tư vấn Luật Đất đai Việt Nam chuyên nghiệp, đưa ra câu trả lời nháp chính xác dựa trên căn cứ pháp lý và hiệu lực.</li>
-                        <li><strong>Task Boundary:</strong> Chỉ tư vấn và trả lời các nội dung liên quan đến Luật Đất đai Việt Nam. Trích dẫn đúng định dạng <code>[Số hiệu - Điều khoản]</code>. Tuyệt đối không tự bịa đặt tài liệu.</li>
-                        <li><strong>Skills & Tools:</strong> Phân quyền gọi Kỹ năng tra cứu (<code>search_retrieval</code>) và phân tích sâu điều luật (<code>analysis</code>).</li>
-                        <li><strong>Output Schema (LandLawOutput):</strong>
-                            <ul>
-                                <li><code>draft_answer</code> (str): Nội dung câu trả lời nháp chi tiết về Đất đai kèm các điểm trích dẫn luật định dạng chuẩn.</li>
-                                <li><code>citations</code> (List[CitationItem]): Danh sách các trích dẫn cấu trúc chứa: <code>norm_code</code>, <code>citation_name</code>, và <code>comp_id</code>.</li>
-                                <li><code>requires_clarification</code> (bool): Đặt thành True nếu thiếu thông tin đầu vào từ người dùng (như mốc thời gian, loại đất, mục đích sử dụng...) để đưa ra kết luận.</li>
-                                <li><code>clarification_prompt</code> (str, optional): Câu hỏi làm rõ nghiệp vụ chi tiết gửi tới người dùng.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <h4 style="color: #fff;">Hàm thành viên:</h4>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
-                        <li><code>_process_search_item(item)</code> (Pure Function): 
-                            Trích xuất thông tin trích dẫn, gọi tiếp Kỹ năng Phân tích sâu để lấy thông tin trạng thái hiệu lực thực tế cùng lịch sử sửa đổi đệ quy của điều khoản đất đai đó trên Neo4j.
-                        </li>
-                        <li><code>run(state)</code>:
-                            Thực hiện gọi <code>execute_search_retrieval()</code>, sau đó dùng <code>map()</code> xử lý song song các kết quả thông qua <code>_process_search_item()</code>. Cuối cùng, tổng hợp toàn bộ nội dung văn bản gốc và lịch sử sửa đổi thành ngữ cảnh hoàn chỉnh truyền cho LLM suy luận. Tích hợp Chiến lược trả lời phân nhánh theo điều kiện thời gian.
-                        </li>
-                    </ul>
-
-                    <h4 style="color: #fff;">Cơ chế bảo vệ (Fallback robustness):</h4>
-                    <p style="color: var(--text-secondary); line-height: 1.8;">
-                        Toàn bộ lời gọi được bao bọc bằng khối <code>try-except</code>. Khi có lỗi (lỗi mạng, hết quota LLM...), Agent in thông báo chi tiết lỗi ra console và trả về cấu trúc fallback an toàn kèm các trích dẫn sơ bộ thu thập được để bảo đảm hệ thống không bị sập.
-                    </p>
-                </div>
-            </section>
-
-            <!-- SECTION 6: ORCHESTRATOR AGENT -->
-            <section style="margin-bottom: 4rem;">
-                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-indigo);">6. Tác nhân Điều phối: OrchestratorAgent</h2>
-                <p>Nằm tại đường dẫn: <code>orchestrator.py</code> ở thư mục gốc. Đây là tác nhân đầu não chịu trách nhiệm phân loại ý định người dùng và định tuyến câu hỏi nghiệp vụ.</p>
-                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-indigo);">
-                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>OrchestratorAgent</code></h3>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
-                        <li><strong>Goal & Context:</strong> Phân loại ý định thô của người dùng thành chitchat (bypass) hoặc câu hỏi nghiệp vụ (legal) để định tuyến sang các domain.</li>
-                        <li><strong>Task Boundary:</strong> Chỉ phân loại và định tuyến lĩnh vực luật. Tuyệt đối không tự trả lời nghiệp vụ pháp luật.</li>
-                        <li><strong>Skills & Tools:</strong> Không sử dụng Kỹ năng hay Công cụ nghiệp vụ nào (<code>[]</code>).</li>
-                        <li><strong>Output Schema (OrchestratorOutput):</strong>
-                            <ul>
-                                <li><code>effort_level</code> (str): "bypass" hoặc "legal".</li>
-                                <li><code>detected_domains</code> (List[str]): Danh sách các domains phát hiện được ("tax", "land").</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </section>
-
-            <!-- SECTION 7: CONFLICT RESOLUTION AGENT -->
-            <section style="margin-bottom: 4rem;">
-                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-warning);">7. Tác nhân Giải quyết Xung đột: ConflictResolutionAgent</h2>
-                <p>Nằm tại đường dẫn: <code>agents/conflict.py</code>. Tác nhân chuyên biệt phát hiện và xử lý mâu thuẫn chéo giữa các quy định pháp luật dựa trên Điều 156 Luật Ban hành văn bản quy phạm pháp luật.</p>
-                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-warning);">
-                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>ConflictResolutionAgent(BaseAgent)</code></h3>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
-                        <li><strong>Goal & Context:</strong> Phát hiện mâu thuẫn pháp luật dựa theo cấp bậc, thời gian ban hành hoặc chuyên ngành. Đưa ra nguyên tắc áp dụng cụ thể.</li>
-                        <li><strong>Task Boundary:</strong> Chỉ phát hiện mâu thuẫn và đề xuất hướng giải quyết. Không soạn thảo toàn văn báo cáo cuối cùng.</li>
-                        <li><strong>Skills & Tools:</strong> Phân quyền sử dụng kỹ năng `search_retrieval` và `reporting`.</li>
-                        <li><strong>Output Schema (ConflictOutput):</strong>
-                            <ul>
-                                <li><code>has_conflict</code> (bool): Đánh giá xem có tồn tại mâu thuẫn nào không.</li>
-                                <li><code>conflicts</code> (List[LegalConflict]): Danh sách các mâu thuẫn chi tiết (loại mâu thuẫn, mô tả, quy tắc xử lý, văn bản được áp dụng).</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </section>
-
-            <!-- SECTION 8: SYNTHESIS AGENT -->
-            <section style="margin-bottom: 4rem;">
-                <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1.5rem; color: var(--color-success);">8. Tác nhân Tổng hợp Báo cáo: SynthesisAgent</h2>
-                <p>Nằm tại đường dẫn: <code>agents/synthesis.py</code>. Tác nhân gộp câu trả lời nháp từ các tác nhân con và kết quả giải quyết xung đột thành báo cáo tư vấn chính thức gửi cho người dùng.</p>
-                <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--color-success);">
-                    <h3 style="color: #fff; margin-top: 0;">Lớp: <code>SynthesisAgent(BaseAgent)</code></h3>
-                    <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-secondary); line-height: 1.8;">
-                        <li><strong>Goal & Context:</strong> Biên soạn báo cáo tư vấn pháp lý chính thức định dạng Markdown, giải thích rõ các điểm xung đột và nguyên tắc áp dụng.</li>
-                        <li><strong>Task Boundary:</strong> Chỉ tổng hợp dữ liệu đầu vào. Không tự ý sáng tạo thông tin ngoài tài liệu bổ trợ.</li>
-                        <li><strong>Skills & Tools:</strong> Phân quyền gọi Kỹ năng đóng gói và kiểm chứng báo cáo (<code>reporting</code>).</li>
-                        <li><strong>Output Schema (SynthesisOutput):</strong>
-                            <ul>
-                                <li><code>final_answer</code> (str): Báo cáo pháp lý chính thức đã kiểm chứng và định dạng Markdown/HTML.</li>
-                                <li><code>all_citations</code> (List[CitationItem]): Toàn bộ danh mục trích dẫn đã được kiểm chứng.</li>
-                                <li><code>requires_clarification</code> (bool): Cờ báo hiệu cần làm rõ.</li>
-                                <li><code>clarification_prompt</code> (str, optional): Nội dung câu hỏi làm rõ.</li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </section>
+                <!-- Agent 5: SynthesisAgent -->
+                <section class="doc-section">
+                    <h2 class="section-title">5. SynthesisAgent (Tác Nhân Tổng Hợp Báo Cáo)</h2>
+                    <div class="card">
+                        <p><strong>File mã nguồn:</strong> <a href="file:///c:/Users/Admin/Desktop/TIC_Project/temp/agent/agents/synthesis.py">agents/synthesis.py</a></p>
+                        <ul class="feature-list">
+                            <li><strong>Mặc định Ngắn Gọn:</strong> Trả lời cực kỳ ngắn gọn, súc tích, đi thẳng vào đáp án trọng tâm.</li>
+                            <li><strong>Chỉ Chi tiết Khi Được Yêu Cầu:</strong> Chỉ khi người dùng yêu cầu cụ thể (<em>"giải thích chi tiết"</em>) mới phân tích sâu.</li>
+                            <li><strong>Ẩn Xử lý Xung đột Nội bộ:</strong> Âm thầm sử dụng kết quả giải quyết từ ConflictAgent, tuyệt đối <strong>KHÔNG in mục "Đánh giá xung đột"</strong> ra báo cáo người dùng.</li>
+                            <li><strong>Bắt buộc Nguồn Trích dẫn:</strong> Luôn đính kèm danh mục trích dẫn <code>[Số hiệu - Điều khoản]</code> ở cuối để người dùng double-check.</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
         </main>
     </div>
 </body>

@@ -32,9 +32,24 @@ class QueryReformAgent(BaseAgent):
             "làm sạch chính tả, chuẩn hóa các thuật ngữ viết tắt và mở rộng các từ khóa pháp luật liên quan "
             "(ví dụ: 'thuế tndn' -> 'thuế thu nhập doanh nghiệp', 'nđ cp' -> 'nghị định chính phủ'). "
             "Đồng thời trích xuất danh sách thực thể pháp lý có trong câu hỏi. "
-            "Cuối cùng, đánh giá mức độ rõ ràng của câu hỏi bằng confidence (0.0-1.0): "
-            "nếu câu hỏi mơ hồ, thiếu ngữ cảnh hoặc thiếu thông tin quan trọng (như ngành nghề, kỳ tính thuế, loại hình DN...) thì confidence < 0.75 "
-            "và liệt kê các thông tin còn thiếu kèm câu hỏi gợi ý trong missing_info."
+            "Cuối cùng, đánh giá mức độ rõ ràng của câu hỏi bằng confidence (0.0-1.0):\n"
+            "- Đặt confidence = 1.0 cho các câu chào hỏi, các câu hỏi đã có sản phẩm/đối tượng/vị trí cụ thể (như 'thuế GTGT đèn LED', 'bảng giá đất Phường 2 Quận 7 TP.HCM').\n"
+            "- Đặt confidence < 0.70 và bổ sung missing_info khi câu hỏi rơi vào các nhóm mơ hồ/thiếu điều kiện sau:\n"
+            "  1. CỤT NGỦN / MƠ HỒ: Câu hỏi quá ngắn không đủ nghĩa (ví dụ: 'Tiền bao nhiêu?', 'Thuế thế nào?').\n"
+            "  2. DANH MỤC HÀNG HÓA/SẢN PHẨM QUÁ RỘNG: (ví dụ: 'thuế cá', 'thuế gỗ', 'thuế xe', 'thuế nông sản'...) "
+            "hỏi làm rõ trạng thái sản phẩm (tươi sống hay chế biến đóng hộp), dòng xe cũ/mới hay mục đích kinh doanh/xuất khẩu để chốt mức thuế chính xác.\n"
+            "  3. THIẾU VỊ TRÍ ĐỊA BÀN ĐẤT ĐAI: (ví dụ: 'giá đất thế nào?', 'bảng giá đất TP.HCM...', 'lệ phí sổ đỏ...'): "
+            "hỏi làm rõ địa bàn hành chính (Quận/Huyện, Phường/Xã hoặc Tuyến đường) để báo giá đất và quy định chính xác.\n"
+            "  4. THIẾU TÌNH TRẠNG GIẤY TỜ / PHÁP LÝ ĐẤT: (ví dụ: 'thủ tục cấp sổ đỏ', 'bồi thường thu hồi đất', 'tách thửa đất'...): "
+            "hỏi làm rõ tình trạng giấy tờ hiện tại (đã có Sổ đỏ/Sổ hồng hay chưa, đất có tranh chấp không...).\n"
+            "  5. THIẾU MỐC THỜI GIAN TRANH CHẤP / GIAO DỊCH QUÁ KHỨ: (ví dụ: 'thừa kế đất đai từ xưa', 'miễn giảm thuế năm cũ'...): "
+            "hỏi làm rõ năm/thời điểm phát sinh giao dịch (năm 2013, 2017 hay 2024) để tra cứu đúng luật có hiệu lực tại thời điểm đó.\n"
+            "  6. THIẾU LOẠI HÌNH THUẾ CỤ THỂ: (ví dụ: 'nộp thuế doanh nghiệp', 'kê khai thuế'...): "
+            "hỏi làm rõ loại thuế muốn tư vấn (Thuế GTGT, Thuế TNDN, Thuế TNCN, Lệ phí môn bài...) và kỳ tính thuế.\n"
+            "  7. THIẾU HÀNG THỪA KẾ / DI CHÚC: (ví dụ: 'chia thừa kế đất đai', 'tài sản vợ chồng'...): "
+            "hỏi làm rõ có di chúc hay không, quan hệ nhân thân (con ruột, con nuôi...) để xác định chia theo pháp luật hay di chúc.\n"
+            "  8. THIẾU ĐIỀU KIỆN MIỄN GIẢM / ƯU ĐÃI THUẾ: (ví dụ: 'miễn thuế khi bán nhà', 'ưu đãi thuế DN'...): "
+            "hỏi làm rõ điều kiện đặc thù (bán căn nhà duy nhất, địa bàn ưu đãi đầu tư, doanh nghiệp nhỏ và vừa...)."
         )
         task_boundary = "Chỉ chuẩn hóa câu hỏi, trích xuất thực thể và đánh giá độ rõ ràng. Tuyệt đối không tự trả lời câu hỏi."
         skills_tools: List[str] = []
@@ -50,15 +65,37 @@ class QueryReformAgent(BaseAgent):
     def run(self, state: AgentState) -> Dict[str, Any]:
         """Thực thi suy luận chuẩn hóa câu hỏi."""
         raw_query = state.get("raw_query", "")
+        history_messages = state.get("messages", [])
         
         # 1. Khởi tạo LLM adapter tương ứng với nhà cung cấp
         model_name = MODEL_SUB_AGENT_GPT if self.provider == "openai" else MODEL_SUB_AGENT_GEMINI
         model = get_ai_model(model_name, provider=self.provider)
         
-        # 2. Xây dựng prompt
+        # 2. Xây dựng prompt kèm Hồ sơ Bộ nhớ Dài hạn & Lịch sử Hội thoại gần nhất
+        user_profile = state.get("user_profile", {})
+        profile_text = f"Hồ sơ khách hàng đã lưu từ trước: {user_profile}\n" if user_profile else ""
+        
+        history_text = ""
+        if history_messages:
+            recent_msgs = history_messages[-12:]  # Lấy 12 tin nhắn gần nhất (6 lượt trao đổi)
+            formatted_history = []
+            for msg in recent_msgs:
+                role = "Người dùng" if getattr(msg, "type", "") == "human" or (isinstance(msg, dict) and msg.get("role") == "user") else "Trợ lý"
+                content = getattr(msg, "content", "") or (msg.get("content") if isinstance(msg, dict) else str(msg))
+                formatted_history.append(f"{role}: {content}")
+            history_text = "Lịch sử hội thoại gần đây:\n" + "\n".join(formatted_history) + "\n"
+        
+        prompt_text = (
+            f"{profile_text}"
+            f"{history_text}"
+            f"Câu hỏi thô mới của người dùng: '{raw_query}'\n"
+            f"Lưu ý: Sử dụng hồ sơ khách hàng đã lưu và lịch sử hội thoại trên để làm rõ đối tượng/ngữ cảnh "
+            f"nếu câu hỏi mới có tính chất nối tiếp hoặc hỏi ngắn."
+        )
+        
         messages = [
             {"role": "system", "content": self.goal_context},
-            {"role": "user", "content": f"Câu hỏi thô cần xử lý: '{raw_query}'"}
+            {"role": "user", "content": prompt_text}
         ]
         
         try:
